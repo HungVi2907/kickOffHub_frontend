@@ -1,0 +1,34 @@
+.home {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1rem;
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+}
+.home h2 {
+  margin-bottom: 0.5rem;
+  color: #ffffff;
+}
+.country-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0;
+}
+.country-item {
+  padding: 0.75rem 0.5rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.country-item strong {
+  color: #ffffff;
+}
+.muted {
+  color: rgba(255,255,255,0.85);
+  margin-left: 0.5rem;
+}
+.error {
+  color: #ffd2d2; /* light red on bright bg */
+}

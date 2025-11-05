@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  @apply bg-parchment text-slate-900 antialiased transition-colors duration-300;
+}
+
+.dark body {
+  @apply bg-navy text-slate-100;
+}
+
+#root {
+  height: 100%;
+}
+
+a {
+  @apply text-primary-500 transition-colors duration-200;
+}
+
+a:hover {
+  @apply text-primary-400;
+}
