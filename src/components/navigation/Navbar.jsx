@@ -28,6 +28,16 @@ function ThemeToggle() {
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+
+  const handleSearchSubmit = (event) => {
+    event.preventDefault()
+    const trimmed = searchTerm.trim()
+    if (!trimmed) {
+      return
+    }
+    console.info(`Search requested for: ${trimmed}`)
+  }
 
   const renderLink = (link) => (
     <NavLink
@@ -54,49 +64,77 @@ export default function Navbar() {
       transition={{ duration: 0.5, ease: 'easeOut' }}
       className="sticky top-0 z-50 border-b border-slate-200 bg-white/80 backdrop-blur dark:border-slate-800 dark:bg-navy/80"
     >
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-        <NavLink to="/" className="flex items-center gap-3">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-600 text-lg font-bold text-white shadow-lg">
-            KH
-          </span>
-          <div className="flex flex-col">
-            <span className="text-lg font-bold text-navy dark:text-white">KickOff Hub</span>
-            <span className="text-xs uppercase tracking-widest text-slate-500 dark:text-slate-400">
-              Football analytics
-            </span>
-          </div>
-        </NavLink>
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8">
+        <div className="flex w-full flex-wrap items-center justify-between gap-3">
+          <NavLink to="/" className="flex items-center gap-3">
+            <img src="/logo-kickoffhub.jpg" alt="KickOff Hub Logo" className="h-12 w-12 rounded-full shadow-lg" />
+            <div className="flex flex-col">
+              <span className="text-xl font-bold text-navy dark:text-white">KickOff Hub</span>
+              <span className="text-xs uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                Football analytics
+              </span>
+            </div>
+          </NavLink>
 
-        <div className="flex items-center gap-3 lg:hidden">
-          <ThemeToggle />
-          <button
-            type="button"
-            onClick={() => setIsOpen((prev) => !prev)}
-            className="inline-flex items-center justify-center rounded-md border border-slate-200 bg-white p-2 text-slate-600 shadow-sm transition hover:bg-primary-100 hover:text-primary-800 dark:border-slate-700 dark:bg-navy dark:text-slate-100 dark:hover:bg-primary-900/60"
-            aria-label="Toggle navigation"
-          >
-            <span className="sr-only">Toggle navigation</span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth="1.5"
-              stroke="currentColor"
-              className="h-5 w-5"
+          <div className="ml-auto flex items-center gap-3">
+            <ThemeToggle />
+            <button
+              type="button"
+              onClick={() => setIsOpen((prev) => !prev)}
+              className="inline-flex items-center justify-center rounded-md border border-slate-200 bg-white p-2 text-slate-600 shadow-sm transition hover:bg-primary-100 hover:text-primary-800 dark:border-slate-700 dark:bg-navy dark:text-slate-100 dark:hover:bg-primary-900/60 lg:hidden"
+              aria-label="Toggle navigation"
             >
-              {isOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 5.25h16.5M3.75 12h16.5M3.75 18.75h16.5" />
-              )}
-            </svg>
-          </button>
+              <span className="sr-only">Toggle navigation</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="1.5"
+                stroke="currentColor"
+                className="h-5 w-5"
+              >
+                {isOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 5.25h16.5M3.75 12h16.5M3.75 18.75h16.5" />
+                )}
+              </svg>
+            </button>
+          </div>
         </div>
 
-        <nav className="hidden gap-1 lg:flex">{NAV_LINKS.map(renderLink)}</nav>
-
-        <div className="hidden lg:block">
-          <ThemeToggle />
+        <div className="flex w-full flex-wrap items-center gap-3 border-t border-slate-200 pt-3 dark:border-slate-700">
+          <nav className="hidden flex-1 flex-wrap items-center gap-1 lg:flex">{NAV_LINKS.map(renderLink)}</nav>
+          <form
+            onSubmit={handleSearchSubmit}
+            className="flex w-full items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 shadow-sm transition focus-within:border-primary-600 focus-within:ring-2 focus-within:ring-primary-200 dark:border-slate-700 dark:bg-navy dark:focus-within:border-primary-400 dark:focus-within:ring-primary-400/40 sm:w-auto sm:flex-1 lg:max-w-md"
+            role="search"
+            aria-label="Tìm kiếm"
+          >
+            <input
+              type="search"
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Search teams, players, leagues..."
+              className="flex-1 bg-transparent text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none dark:text-slate-100 dark:placeholder:text-slate-500"
+            />
+            <button
+              type="submit"
+              className="inline-flex items-center gap-2 rounded-full bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-400"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="1.5"
+                stroke="currentColor"
+                className="h-4 w-4"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-4.35-4.35m0 0a7 7 0 1 0-9.9-9.9 7 7 0 0 0 9.9 9.9Z" />
+              </svg>
+              <span className="hidden sm:inline">Search</span>
+            </button>
+          </form>
         </div>
       </div>
 

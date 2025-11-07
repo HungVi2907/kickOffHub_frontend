@@ -19,6 +19,15 @@ export default function Home() {
   const [countries, setCountries] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [totalCountries, setTotalCountries] = useState(null)
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [searchValue, setSearchValue] = useState('')
+  const [activeSearch, setActiveSearch] = useState('')
+  const isSearching = activeSearch.trim().length > 0
+  const totalCountriesLabel = Number.isFinite(totalCountries)
+    ? new Intl.NumberFormat().format(totalCountries)
+    : '—'
   const [leagues, setLeagues] = useState([])
   const [leagueLoading, setLeagueLoading] = useState(false)
   const [leagueError, setLeagueError] = useState('')
@@ -28,11 +37,45 @@ export default function Home() {
       setLoading(true)
       setError('')
       try {
-        const response = await apiClient.get('/countries', { signal })
-        const list = Array.isArray(response.data)
-          ? response.data
-          : response.data?.data || []
-        setCountries(list.slice(0, FEATURED_COUNT))
+        if (isSearching) {
+          const response = await apiClient.get('/countries/search', {
+            signal,
+            params: { name: activeSearch.trim() },
+          })
+          const list = Array.isArray(response.data) ? response.data : []
+          setCountries(list)
+          setTotalPages(1)
+        } else {
+          const response = await apiClient.get('/countries', {
+            signal,
+            params: { page, limit: FEATURED_COUNT },
+          })
+          const rawData = Array.isArray(response.data)
+            ? response.data
+            : Array.isArray(response.data?.data)
+            ? response.data.data
+            : []
+          setCountries(rawData)
+          const pagination = response.data?.pagination || {}
+          const totalItems = Number.parseInt(pagination.totalItems, 10)
+          const totalPagesFromResponse = Number.parseInt(pagination.totalPages, 10)
+          const pageFromResponse = Number.parseInt(pagination.page, 10)
+
+          setTotalCountries((previous) => {
+            if (Number.isFinite(totalItems)) {
+              return totalItems
+            }
+            return Number.isFinite(previous) ? previous : rawData.length
+          })
+          if (Number.isFinite(totalPagesFromResponse) && totalPagesFromResponse > 0) {
+            setTotalPages(totalPagesFromResponse)
+          } else {
+            setTotalPages(1)
+          }
+          if (Number.isFinite(pageFromResponse) && pageFromResponse > 0) {
+            setPage((prevPage) => (prevPage === pageFromResponse ? prevPage : pageFromResponse))
+          }
+        }
       } catch (err) {
         if (axios.isCancel(err)) return
         const message = err.response?.data?.message || err.message || 'Failed to load countries'
@@ -41,8 +84,50 @@ export default function Home() {
         setLoading(false)
       }
     },
-    [],
+    [activeSearch, isSearching, page],
   )
+
+  const hasSearchValue = searchValue.length > 0
+  const canGoPrev = !isSearching && page > 1
+  const canGoNext = !isSearching && page < totalPages
+
+  const handleSearchSubmit = (event) => {
+    event.preventDefault()
+    const trimmed = searchValue.trim()
+    setSearchValue(trimmed)
+    if (trimmed === activeSearch) {
+      if (page !== 1) {
+        setPage(1)
+      } else {
+        fetchCountries()
+      }
+      return
+    }
+    setActiveSearch(trimmed)
+    setPage(1)
+  }
+
+  const handleClearSearch = () => {
+    setSearchValue('')
+    if (activeSearch !== '') {
+      setActiveSearch('')
+      setPage(1)
+    }
+  }
+
+  const handlePrevPage = () => {
+    if (!canGoPrev) {
+      return
+    }
+    setPage((prev) => Math.max(prev - 1, 1))
+  }
+
+  const handleNextPage = () => {
+    if (!canGoNext) {
+      return
+    }
+    setPage((prev) => prev + 1)
+  }
 
   useEffect(() => {
     const controller = new AbortController()
@@ -109,7 +194,7 @@ export default function Home() {
             <span className="text-sm font-semibold uppercase tracking-[0.2em] text-primary-600 dark:text-primary-300">
               API Snapshot
             </span>
-            <p className="text-3xl font-bold">171 Countries</p>
+            <p className="text-3xl font-bold">{totalCountriesLabel} Countries</p>
             <p className="text-sm leading-relaxed text-primary-700 dark:text-primary-200/80">
               Start browsing the full list below. Premier League league and team hubs are around the
               corner.
@@ -198,20 +283,76 @@ export default function Home() {
       </section>
 
       <section className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="space-y-1">
             <h2 className="text-2xl font-semibold text-navy dark:text-white">Featured countries</h2>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              Showing the first {FEATURED_COUNT} countries returned from the API.
-            </p>
+            {isSearching && (
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                {loading
+                  ? 'Searching countries...'
+                  : `Showing ${countries.length} result${countries.length === 1 ? '' : 's'} for "${activeSearch}"`}
+              </p>
+            )}
           </div>
-          <button
-            type="button"
-            onClick={() => fetchCountries()}
-            className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-600 shadow-sm transition hover:border-primary-400 hover:text-primary-600 dark:border-slate-700 dark:bg-navy dark:text-slate-200 dark:hover:border-primary-500 dark:hover:text-primary-200"
-          >
-            Refresh
-          </button>
+          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+            <form
+              onSubmit={handleSearchSubmit}
+              className="flex w-full items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 shadow-sm transition focus-within:border-primary-600 focus-within:ring-2 focus-within:ring-primary-200 dark:border-slate-700 dark:bg-navy dark:focus-within:border-primary-400 dark:focus-within:ring-primary-400/40 sm:max-w-md"
+              role="search"
+              aria-label="Search countries"
+            >
+              <input
+                type="search"
+                value={searchValue}
+                onChange={(event) => setSearchValue(event.target.value)}
+                placeholder="Search countries..."
+                className="flex-1 bg-transparent text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none dark:text-slate-100 dark:placeholder:text-slate-500"
+              />
+              {hasSearchValue && (
+                <button
+                  type="button"
+                  onClick={handleClearSearch}
+                  className="rounded-full p-1 text-slate-400 transition hover:text-primary-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-400 dark:text-slate-500 dark:hover:text-primary-300"
+                  aria-label="Clear country search"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.5"
+                    stroke="currentColor"
+                    className="h-4 w-4"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+              <button
+                type="submit"
+                className="inline-flex items-center gap-2 rounded-full bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-400"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                  className="h-4 w-4"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-4.35-4.35m0 0a7 7 0 1 0-9.9-9.9 7 7 0 0 0 9.9 9.9Z" />
+                </svg>
+                <span className="hidden sm:inline">Search</span>
+              </button>
+            </form>
+            <button
+              type="button"
+              onClick={() => fetchCountries()}
+              disabled={loading}
+              className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-600 shadow-sm transition hover:border-primary-400 hover:text-primary-600 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-navy dark:text-slate-200 dark:hover:border-primary-500 dark:hover:text-primary-200"
+            >
+              Refresh
+            </button>
+          </div>
         </div>
 
         {error && (
@@ -232,7 +373,9 @@ export default function Home() {
 
           {!loading && !error && countries.length === 0 && (
             <div className="rounded-xl border border-dashed border-slate-300 bg-white/60 p-6 text-sm text-slate-500 dark:border-slate-700 dark:bg-navy/60 dark:text-slate-400">
-              No countries available yet.
+              {isSearching
+                ? `No countries match "${activeSearch}".`
+                : 'No countries available yet.'}
             </div>
           )}
 
@@ -281,6 +424,52 @@ export default function Home() {
               </MotionArticle>
             ))}
         </div>
+
+        {!isSearching && totalPages > 1 && (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm shadow-sm dark:border-slate-700 dark:bg-navy/80">
+            <span className="text-slate-600 dark:text-slate-300">
+              Page {page} of {totalPages}
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handlePrevPage}
+                disabled={!canGoPrev || loading}
+                className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-4 py-2 font-medium text-slate-600 transition hover:border-primary-400 hover:text-primary-600 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-navy dark:text-slate-200 dark:hover:border-primary-500 dark:hover:text-primary-200"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                  className="h-4 w-4"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                </svg>
+                <span>Previous</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleNextPage}
+                disabled={!canGoNext || loading}
+                className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-4 py-2 font-medium text-slate-600 transition hover:border-primary-400 hover:text-primary-600 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-navy dark:text-slate-200 dark:hover:border-primary-500 dark:hover:text-primary-200"
+              >
+                <span>Next</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                  className="h-4 w-4"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
       </section>
     </div>
   )
