@@ -5,6 +5,9 @@ import Countries from '../pages/Countries.jsx'
 import Home from '../pages/Home.jsx'
 import League from '../pages/League.jsx'
 import Teams from '../pages/Teams.jsx'
+import Players from '../pages/Players.jsx'
+import PlayerDetail from '../pages/PlayerDetail.jsx'
+import TeamDetail from '../pages/TeamDetail.jsx'
 import { ROUTES } from './paths.js'
 
 export default function AppRoutes({ location }) {
@@ -16,6 +19,9 @@ export default function AppRoutes({ location }) {
   <Route path={ROUTES.league} element={<League />} />
   <Route path={ROUTES.leagueDetail} element={<League />} />
         <Route path={ROUTES.teams} element={<Teams />} />
+        <Route path={ROUTES.teamDetail} element={<TeamDetail />} />
+        <Route path={ROUTES.players} element={<Players />} />
+        <Route path={ROUTES.playerDetail} element={<PlayerDetail />} />
         <Route path={ROUTES.about} element={<About />} />
       </Route>
     </Routes>

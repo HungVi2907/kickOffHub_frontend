@@ -8,7 +8,7 @@ const MotionMain = motion.main
 
 export default function MainLayout() {
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-br from-parchment via-white to-slate-100 text-slate-900 dark:from-navy dark:via-[#141c36] dark:to-[#0b132b] dark:text-slate-100">
+    <div className="flex min-h-screen flex-col bg-gradient-to-br from-parchment via-white to-slate-100 text-slate-900">
       <Navbar />
       <div className="flex-1">
         <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:flex-row lg:px-8">

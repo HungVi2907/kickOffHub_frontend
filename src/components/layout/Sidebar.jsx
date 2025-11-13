@@ -17,10 +17,10 @@ const sidebarItems = [
 
 export default function Sidebar() {
   return (
-    <aside className="sticky top-20 hidden h-fit w-72 flex-shrink-0 rounded-xl border border-slate-200 bg-white/70 p-6 shadow-sm dark:border-slate-800 dark:bg-navy/70 lg:block">
+    <aside className="sticky top-20 hidden h-fit w-72 flex-shrink-0 rounded-xl border border-slate-200 bg-white/70 p-6 shadow-sm lg:block">
       {sidebarItems.map((section) => (
         <div key={section.title} className="mb-6 last:mb-0">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
             {section.title}
           </p>
           <ul className="mt-3 space-y-2">
@@ -28,7 +28,7 @@ export default function Sidebar() {
               <li key={link.label}>
                 <a
                   href={link.href}
-                  className="text-sm text-slate-600 transition hover:text-primary-600 dark:text-slate-200 dark:hover:text-primary-300"
+                  className="text-sm text-slate-600 transition hover:text-primary-600"
                 >
                   {link.label}
                 </a>

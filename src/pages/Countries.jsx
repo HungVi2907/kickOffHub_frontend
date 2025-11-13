@@ -14,15 +14,15 @@ export default function Countries() {
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary-500">
           Explorer
         </p>
-        <h1 className="text-3xl font-bold text-navy dark:text-white">
+        <h1 className="text-3xl font-bold text-black">
           Countries
         </h1>
-        <p className="max-w-2xl text-sm text-slate-600 dark:text-slate-300">
+        <p className="max-w-2xl text-sm text-slate-600text-slate-300">
           Browse all national associations supported by the KickOff Hub API. Filters and enhanced
           search will arrive in the next iteration.
         </p>
       </header>
-      <div className="rounded-xl border border-dashed border-slate-300 bg-white/60 p-8 text-sm text-slate-500 dark:border-slate-700 dark:bg-navy/60 dark:text-slate-400">
+      <div className="rounded-xl border border-dashed border-slate-300 bg-white/60 p-8 text-sm text-slate-500border-slate-700bg-navy/60text-slate-400">
         Country directory is under construction. Stay tuned!
       </div>
     </MotionSection>

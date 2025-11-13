@@ -9,7 +9,7 @@ export default defineConfig({
     proxy: {
       // Proxy any request starting with /api to the backend server
       '/api': {
-        target: 'https://kickoffhub-api.onrender.com',  // Backend API server
+        target: 'http://localhost:3000/',  // Backend API server
         changeOrigin: true,
         secure: false,
         // rewrite: (path) => path.replace(/^\/api/, '/api') // no rewrite needed

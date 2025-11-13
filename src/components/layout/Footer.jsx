@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <footer className="mt-10 border-t border-slate-200 bg-white/60 text-xs text-slate-500 dark:border-slate-800 dark:bg-navy/60 dark:text-slate-400">
+    <footer className="mt-10 border-t border-slate-200 bg-white/60 text-xs text-slate-500">
       <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-6 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
         <p>
           © {new Date().getFullYear()} KickOff Hub. Crafted for football enthusiasts.
