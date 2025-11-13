@@ -9,7 +9,8 @@ export default defineConfig({
     proxy: {
       // Proxy any request starting with /api to the backend server
       '/api': {
-        target: 'http://localhost:3000/',  // Backend API server
+        // Use local backend by default, allow override with env var when needed
+        target: process.env.VITE_API_PROXY_TARGET || 'http://localhost:3000',
         changeOrigin: true,
         secure: false,
         // rewrite: (path) => path.replace(/^\/api/, '/api') // no rewrite needed
