@@ -33,9 +33,16 @@ export default function Home() {
   // ReferenceError and prevented the Home page from rendering. Provide
   // sensible defaults so the component can render even if the search UI is
   // not present or wired up yet.
-  const [searchType] = useState('countries')
+  const [searchType] = useState('players')
   const [isSearching] = useState(false)
   const [activeSearch] = useState('')
+
+  const [players, setPlayers] = useState([])
+  const [playerLoading, setPlayerLoading] = useState(false)
+  const [playerError, setPlayerError] = useState('')
+  const [totalPlayers, setTotalPlayers] = useState(null)
+  const [playerPage, setPlayerPage] = useState(1)
+  const [playerTotalPages, setPlayerTotalPages] = useState(1)
 
   const fetchData = useCallback(
     async ({ signal } = {}) => {
@@ -138,6 +145,74 @@ export default function Home() {
     event.currentTarget.style.display = 'none'
   }, [])
 
+  const fetchPlayers = useCallback(
+    async ({ signal } = {}) => {
+      setPlayerLoading(true)
+      setPlayerError('')
+      try {
+        const response = await apiClient.get('/players/popular', {
+          signal,
+          params: { page: playerPage, limit: FEATURED_COUNT },
+        })
+        const rawData = Array.isArray(response.data)
+          ? response.data
+          : Array.isArray(response.data?.data)
+          ? response.data.data
+          : []
+        setPlayers(rawData)
+        const pagination = response.data?.pagination || {}
+        const totalItems = Number.parseInt(pagination.totalItems, 10)
+        const totalPagesFromResponse = Number.parseInt(pagination.totalPages, 10)
+        const pageFromResponse = Number.parseInt(pagination.page, 10)
+
+        setTotalPlayers((previous) => {
+          if (Number.isFinite(totalItems)) {
+            return totalItems
+          }
+          return Number.isFinite(previous) ? previous : rawData.length
+        })
+        if (Number.isFinite(totalPagesFromResponse) && totalPagesFromResponse > 0) {
+          setPlayerTotalPages(totalPagesFromResponse)
+        } else {
+          setPlayerTotalPages(1)
+        }
+        if (Number.isFinite(pageFromResponse) && pageFromResponse > 0) {
+          setPlayerPage((prevPage) => (prevPage === pageFromResponse ? prevPage : pageFromResponse))
+        }
+      } catch (err) {
+        if (axios.isCancel(err)) return
+        const message = err.response?.data?.message || err.message || 'Failed to load players'
+        setPlayerError(message)
+      } finally {
+        setPlayerLoading(false)
+      }
+    },
+    [playerPage],
+  )
+
+  const canGoPrevPlayer = playerPage > 1
+  const canGoNextPlayer = playerPage < playerTotalPages
+
+  const handlePrevPlayerPage = () => {
+    if (!canGoPrevPlayer) {
+      return
+    }
+    setPlayerPage((prev) => Math.max(prev - 1, 1))
+  }
+
+  const handleNextPlayerPage = () => {
+    if (!canGoNextPlayer) {
+      return
+    }
+    setPlayerPage((prev) => prev + 1)
+  }
+
+  useEffect(() => {
+    const controller = new AbortController()
+    fetchPlayers({ signal: controller.signal })
+    return () => controller.abort()
+  }, [fetchPlayers])
+
   return (
     <div className="space-y-12">
       <MotionSection
@@ -153,21 +228,11 @@ export default function Home() {
               KickOff Hub
             </p>
             <h1 className="text-4xl font-black tracking-tight text-black sm:text-5xl">
-              The modern football reference experience
+              Welcome to Kick-Off Hub!
             </h1>
             <p className="text-base text-slate-600">
-              Explore clubs, competitions, and national teams with a clean interface inspired by
-              fbref.com, powered entirely by the KickOff Hub API.
-            </p>
-          </div>
-            <div className="flex flex-col gap-3 rounded-2xl border border-primary-200 bg-primary-50 px-6 py-5 text-primary-800 shadow-inner">
-              <span className="text-sm font-semibold uppercase tracking-[0.2em] text-primary-600">
-              API Snapshot
-            </span>
-            <p className="text-3xl font-bold">{totalCountriesLabel} Countries</p>
-            <p className="text-sm leading-relaxed text-primary-700">
-              Start browsing the full list below. Premier League league and team hubs are around the
-              corner.
+              The ultimate gathering place for football lovers — where you can explore teams, leagues, and the most accurate stats.
+Let’s feel the rhythm of the pitch and live every match with passion!
             </p>
           </div>
         </div>
@@ -176,18 +241,18 @@ export default function Home() {
       <section className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-semibold text-black">Featured leagues</h2>
-            <p className="text-sm text-slate-600text-slate-400">
+            <h2 className="text-2xl font-semibold text-black">Popular leagues</h2>
+            <p className="text-sm text-slate-600 text-slate-400">
               Listing all competitions currently available in your KickOff Hub database.
             </p>
           </div>
-          <span className="rounded-full bg-primary-100 px-3 py-1 text-xs font-semibold text-primary-700bg-primary-900/40text-primary-200">
+          <span className="rounded-full bg-primary-100 px-3 py-1 text-xs font-semibold text-primary-700 bg-primary-900/40 text-primary-200">
             {leagues.length} league{leagues.length === 1 ? '' : 's'}
           </span>
         </div>
 
         {leagueError && (
-          <div className="rounded-xl border border-red-200 bg-red-50/70 p-4 text-sm text-red-700border-red-800bg-red-900/40text-red-200">
+          <div className="rounded-xl border border-red-200 bg-red-50/70 p-4 text-sm text-red-700 border-red-800 bg-red-900/40 text-red-200">
             <p className="font-semibold">We could not load leagues.</p>
             <p className="mt-1">{leagueError}</p>
           </div>
@@ -198,12 +263,12 @@ export default function Home() {
             Array.from({ length: Math.max(leagues.length || 1, 1) }).map((_, index) => (
               <div
                 key={`league-skeleton-${index}`}
-                className="h-32 animate-pulse rounded-xl border border-slate-200 bg-white/60 shadow-smborder-slate-800bg-navy/60"
+                className="h-32 animate-pulse rounded-xl border border-slate-200 bg-white/60 shadow-sm border-slate-800 bg-navy/60"
               />
             ))}
 
           {!leagueLoading && !leagueError && leagues.length === 0 && (
-            <div className="rounded-xl border border-dashed border-slate-300 bg-white/60 p-6 text-sm text-slate-500border-slate-700bg-navy/60text-slate-400">
+            <div className="rounded-xl border border-dashed border-slate-300 bg-white/60 p-6 text-sm text-slate-500 border-slate-700 bg-navy/60 text-slate-400">
               No leagues have been synced yet. Import one from the backend to see it here.
             </div>
           )}
@@ -216,11 +281,11 @@ export default function Home() {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: 0.02 }}
-                className="group flex h-32 flex-col justify-between rounded-xl border border-slate-200 bg-white/80 p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-400border-slate-800bg-navy/80"
+                className="group flex h-32 flex-col justify-between rounded-xl border border-slate-200 bg-white/80 p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-400 border-slate-800 bg-navy/80"
               >
                 <div className="flex items-center gap-4">
                   {league.logo ? (
-                    <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-white/80 shadow-smborder-slate-700bg-navy/80">
+                      <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-white/80 shadow-sm border-slate-700 bg-navy/80">
                       <img
                         src={league.logo}
                         alt={`${league.name || 'League'} logo`}
@@ -230,7 +295,7 @@ export default function Home() {
                       />
                     </div>
                   ) : (
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full border border-dashed border-slate-300 text-[10px] uppercase tracking-[0.3em] text-slate-400border-slate-600">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full border border-dashed border-slate-300 text-[10px] uppercase tracking-[0.3em] text-slate-400 border-slate-600">
                       No logo
                     </div>
                   )}
@@ -238,12 +303,12 @@ export default function Home() {
                     <h3 className="text-lg font-semibold text-black transition-colors group-hover:text-primary-600">
                       {league.name || 'Unnamed league'}
                     </h3>
-                    <p className="text-xs uppercase tracking-[0.3em] text-slate-400text-slate-500">
+                    <p className="text-xs uppercase tracking-[0.3em] text-slate-400 text-slate-500">
                       {league.type || 'League'}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center justify-between text-xs text-slate-400text-slate-500">
+                <div className="flex items-center justify-between text-xs text-slate-400 text-slate-500">
                   <span>ID: {league.id ?? 'N/A'}</span>
                   <span>{league.updated_at ? new Date(league.updated_at).toLocaleDateString() : 'Recently synced'}</span>
                 </div>
@@ -255,13 +320,13 @@ export default function Home() {
       <section className="space-y-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-1">
-            <h2 className="text-2xl font-semibold text-black">Featured countries</h2>
+            <h2 className="text-2xl font-semibold text-black">Popular players</h2>
           </div>
           <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
             <button
               type="button"
-              onClick={() => fetchData()}
-              disabled={loading}
+              onClick={() => fetchPlayers()}
+              disabled={playerLoading}
               className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-600 shadow-sm transition hover:border-primary-400 hover:text-primary-600 disabled:cursor-not-allowed disabled:opacity-60"
             >
               Refresh
@@ -269,23 +334,23 @@ export default function Home() {
           </div>
         </div>
 
-        {error && (
+        {playerError && (
           <div className="rounded-xl border border-red-200 bg-red-50/70 p-4 text-sm text-red-700">
             <p className="font-semibold">We could not load {searchType}.</p>
-            <p className="mt-1">{error}</p>
+            <p className="mt-1">{playerError}</p>
           </div>
         )}
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {loading &&
+          {playerLoading &&
             Array.from({ length: FEATURED_COUNT }).map((_, index) => (
               <div
-                key={`skeleton-${index}`}
+                key={`player-skeleton-${index}`}
                 className="h-32 animate-pulse rounded-xl border border-slate-200 bg-white/60 shadow-sm"
               />
             ))}
 
-          {!loading && !error && countries.length === 0 && (
+          {!playerLoading && !playerError && players.length === 0 && (
             <div className="rounded-xl border border-dashed border-slate-300 bg-white/60 p-6 text-sm text-slate-500">
               {isSearching
                 ? `No ${searchType} match "${activeSearch}".`
@@ -293,8 +358,8 @@ export default function Home() {
             </div>
           )}
 
-          {!loading && !error &&
-            countries.map((item) => {
+          {!playerLoading && !playerError &&
+            players.map((item) => {
               if (searchType === 'players') {
                 return (
                   <Link key={item.id} to={`/players/${item.id}`}>
@@ -410,17 +475,17 @@ export default function Home() {
             })}
         </div>
 
-        {!isSearching && totalPages > 1 && (
+        {!isSearching && playerTotalPages > 1 && (
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm shadow-sm">
-            <span className="text-slate-600text-slate-300">
-              Page {page} of {totalPages}
+            <span className="text-slate-600 text-slate-300">
+              Page {playerPage} of {playerTotalPages}
             </span>
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={handlePrevPage}
-                disabled={!canGoPrev || loading}
-                className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-4 py-2 font-medium text-slate-600 transition hover:border-primary-400 hover:text-primary-600 disabled:cursor-not-allowed disabled:opacity-60border-slate-700bg-navytext-slate-200hover:border-primary-500hover:text-primary-200"
+                onClick={handlePrevPlayerPage}
+                disabled={!canGoPrevPlayer || playerLoading}
+                className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-4 py-2 font-medium text-slate-600 transition hover:border-primary-400 hover:text-primary-600 disabled:cursor-not-allowed disabled:opacity-60 border-slate-700 bg-navy text-slate-200 hover:border-primary-500 hover:text-primary-200"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -436,9 +501,9 @@ export default function Home() {
               </button>
               <button
                 type="button"
-                onClick={handleNextPage}
-                disabled={!canGoNext || loading}
-                className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-4 py-2 font-medium text-slate-600 transition hover:border-primary-400 hover:text-primary-600 disabled:cursor-not-allowed disabled:opacity-60border-slate-700bg-navytext-slate-200hover:border-primary-500hover:text-primary-200"
+                onClick={handleNextPlayerPage}
+                disabled={!canGoNextPlayer || playerLoading}
+                className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-4 py-2 font-medium text-slate-600 transition hover:border-primary-400 hover:text-primary-600 disabled:cursor-not-allowed disabled:opacity-60 border-slate-700 bg-navy text-slate-200 hover:border-primary-500 hover:text-primary-200"
               >
                 <span>Next</span>
                 <svg
