@@ -1,7 +1,9 @@
-import { useState } from 'react'
-import { NavLink } from 'react-router-dom'
+import { useMemo, useState } from 'react'
+import { Link, NavLink } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { NAV_LINKS } from '../../routes/paths.js'
+import { useShallow } from 'zustand/react/shallow'
+import { NAV_LINKS, ROUTES } from '../../routes/paths.js'
+import useAuthStore from '../../store/useAuthStore.js'
 
 const linkBaseClass =
   'px-3 py-2 text-sm font-medium transition-colors duration-200 rounded-md'
@@ -12,6 +14,23 @@ const MotionNav = motion.nav
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
+  const { token, user, logout } = useAuthStore(
+    useShallow((state) => ({ token: state.token, user: state.user, logout: state.logout })),
+  )
+  const initials = useMemo(() => {
+    if (!user?.name) return 'KH'
+    return user.name
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((segment) => segment[0].toUpperCase())
+      .join('')
+  }, [user?.name])
+
+  const handleLogout = () => {
+    logout()
+    setIsOpen(false)
+  }
 
   const handleSearchSubmit = (event) => {
     event.preventDefault()
@@ -117,6 +136,43 @@ export default function Navbar() {
               <span className="hidden sm:inline">Search</span>
             </button>
           </form>
+          <div className="hidden items-center gap-2 lg:flex">
+            {token ? (
+              <>
+                <div className="flex items-center gap-3 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100 font-semibold text-primary-700">
+                    {initials}
+                  </div>
+                  <div className="flex flex-col leading-tight">
+                    <span className="text-xs uppercase tracking-widest text-slate-400">Thành viên</span>
+                    <span className="font-semibold text-slate-800 line-clamp-1">{user?.name || 'KickOff User'}</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-rose-200 hover:text-rose-600"
+                >
+                  Đăng xuất
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to={ROUTES.login}
+                  className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-primary-500 hover:text-primary-600"
+                >
+                  Đăng nhập
+                </Link>
+                <Link
+                  to={ROUTES.register}
+                  className="rounded-full bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-500"
+                >
+                  Đăng ký
+                </Link>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
@@ -128,7 +184,35 @@ export default function Navbar() {
             exit={{ height: 0, opacity: 0 }}
             className="border-t border-slate-200 bg-white px-4 py-3 shadow-lg lg:hidden"
           >
-            <div className="flex flex-col gap-2">{NAV_LINKS.map(renderLink)}</div>
+            <div className="flex flex-col gap-2">
+              {NAV_LINKS.map(renderLink)}
+              {token ? (
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="rounded-full border border-slate-200 px-4 py-2 text-center text-sm font-semibold text-slate-700 transition hover:border-rose-200 hover:text-rose-600"
+                >
+                  Đăng xuất
+                </button>
+              ) : (
+                <>
+                  <Link
+                    to={ROUTES.login}
+                    onClick={() => setIsOpen(false)}
+                    className="rounded-full border border-slate-200 px-4 py-2 text-center text-sm font-semibold text-slate-700 transition hover:border-primary-500 hover:text-primary-600"
+                  >
+                    Đăng nhập
+                  </Link>
+                  <Link
+                    to={ROUTES.register}
+                    onClick={() => setIsOpen(false)}
+                    className="rounded-full bg-primary-600 px-4 py-2 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-primary-500"
+                  >
+                    Đăng ký
+                  </Link>
+                </>
+              )}
+            </div>
           </MotionNav>
         )}
       </AnimatePresence>
