@@ -1,19 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import axios from 'axios'
-import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import apiClient from '../utils/apiClient.js'
 
 const FEATURED_COUNT = 12
-
-const heroVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 },
-}
-
-const MotionSection = motion.section
-const MotionArticle = motion.article
-const MotionLink = motion(Link)
 
 export default function Home() {
   const [countries, setCountries] = useState([])
@@ -215,13 +205,7 @@ export default function Home() {
 
   return (
     <div className="space-y-12">
-      <MotionSection
-        variants={heroVariants}
-        initial="hidden"
-        animate="visible"
-        transition={{ duration: 0.6 }}
-        className="rounded-3xl border border-slate-200 bg-white/80 p-8 shadow-sm backdrop-blur"
-      >
+      <section className="rounded-3xl border border-slate-200 bg-white/80 p-8 shadow-sm backdrop-blur">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-2xl space-y-3">
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary-500">
@@ -236,7 +220,7 @@ Let’s feel the rhythm of the pitch and live every match with passion!
             </p>
           </div>
         </div>
-  </MotionSection>
+  </section>
 
       <section className="space-y-6">
         <div className="flex items-center justify-between">
@@ -275,12 +259,9 @@ Let’s feel the rhythm of the pitch and live every match with passion!
 
           {!leagueLoading && !leagueError &&
             leagues.map((league) => (
-              <MotionLink
+              <Link
                 to={`/league/${league.id ?? ''}`}
                 key={league.id || league.name}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: 0.02 }}
                 className="group flex h-32 flex-col justify-between rounded-xl border border-slate-200 bg-white/80 p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-400 border-slate-800 bg-navy/80"
               >
                 <div className="flex items-center gap-4">
@@ -312,7 +293,7 @@ Let’s feel the rhythm of the pitch and live every match with passion!
                   <span>ID: {league.id ?? 'N/A'}</span>
                   <span>{league.updated_at ? new Date(league.updated_at).toLocaleDateString() : 'Recently synced'}</span>
                 </div>
-              </MotionLink>
+              </Link>
             ))}
         </div>
       </section>
@@ -363,12 +344,7 @@ Let’s feel the rhythm of the pitch and live every match with passion!
               if (searchType === 'players') {
                 return (
                   <Link key={item.id} to={`/players/${item.id}`}>
-                    <MotionArticle
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, delay: 0.02 }}
-                      className="group flex h-40 flex-col justify-between rounded-xl border border-slate-200 bg-white/80 p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg cursor-pointer"
-                    >
+                    <article className="group flex h-40 flex-col justify-between rounded-xl border border-slate-200 bg-white/80 p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg cursor-pointer">
                       <div className="flex items-start justify-between gap-4">
                         <div className="space-y-2">
                           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400 group-hover:text-primary-500">
@@ -396,18 +372,13 @@ Let’s feel the rhythm of the pitch and live every match with passion!
                         <span>#{String(item.id ?? '')}</span>
                         <span>{item.nationality || 'N/A'}</span>
                       </div>
-                    </MotionArticle>
+                    </article>
                   </Link>
                 )
               } else if (searchType === 'teams') {
                 return (
                   <Link key={item.id} to={`/teams/${item.id}`}>
-                    <MotionArticle
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, delay: 0.02 }}
-                      className="group flex h-40 flex-col justify-between rounded-xl border border-slate-200 bg-white/80 p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg cursor-pointer"
-                    >
+                    <article className="group flex h-40 flex-col justify-between rounded-xl border border-slate-200 bg-white/80 p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg cursor-pointer">
                       <div className="space-y-2">
                         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400 group-hover:text-primary-500">
                           Team
@@ -423,17 +394,14 @@ Let’s feel the rhythm of the pitch and live every match with passion!
                         <span>#{String(item.id ?? '')}</span>
                         <span>{item.founded || 'N/A'}</span>
                       </div>
-                    </MotionArticle>
+                    </article>
                   </Link>
                 )
               } else {
                 // Countries
                 return (
-                  <MotionArticle
+                  <article
                     key={item.id || item.code || item.name}
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: 0.02 }}
                     className="group flex h-40 flex-col justify-between rounded-xl border border-slate-200 bg-white/80 p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
                   >
                     <div className="flex items-start justify-between gap-4">
@@ -469,7 +437,7 @@ Let’s feel the rhythm of the pitch and live every match with passion!
                       <span>#{String(item.id ?? '')}</span>
                       <span>{item.updated_at ? new Date(item.updated_at).toLocaleDateString() : 'Recently synced'}</span>
                     </div>
-                  </MotionArticle>
+                  </article>
                 )
               }
             })}

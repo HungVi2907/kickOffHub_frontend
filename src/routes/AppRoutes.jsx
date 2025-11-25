@@ -13,6 +13,7 @@ import PostDetail from '../pages/PostDetail.jsx'
 import Register from '../pages/Register.jsx'
 import TeamDetail from '../pages/TeamDetail.jsx'
 import Teams from '../pages/Teams.jsx'
+import Search from '../pages/Search.jsx'
 import ProtectedRoute from './ProtectedRoute.jsx'
 import { ROUTES } from './paths.js'
 
@@ -28,6 +29,7 @@ export default function AppRoutes({ location }) {
         <Route path="teams/:teamId" element={<TeamDetail />} />
         <Route path="players" element={<Players />} />
         <Route path="players/:id" element={<PlayerDetail />} />
+        <Route path="search" element={<Search />} />
         <Route path="forum" element={<Forum />} />
         <Route element={<ProtectedRoute />}>
           <Route path="forum/new" element={<PostCreate />} />

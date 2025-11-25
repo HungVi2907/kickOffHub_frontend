@@ -13,6 +13,7 @@ export const ROUTES = {
   postDetail: '/forum/:postId',
   login: '/login',
   register: '/register',
+  search: '/search',
 }
 
 export const NAV_LINKS = [

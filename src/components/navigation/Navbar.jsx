@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useShallow } from 'zustand/react/shallow'
 import { NAV_LINKS, ROUTES } from '../../routes/paths.js'
@@ -14,6 +14,7 @@ const MotionNav = motion.nav
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
+  const navigate = useNavigate()
   const { token, user, logout } = useAuthStore(
     useShallow((state) => ({ token: state.token, user: state.user, logout: state.logout })),
   )
@@ -38,7 +39,8 @@ export default function Navbar() {
     if (!trimmed) {
       return
     }
-    console.info(`Search requested for: ${trimmed}`)
+    navigate(`${ROUTES.search}?q=${encodeURIComponent(trimmed)}`)
+    setIsOpen(false)
   }
 
   const renderLink = (link) => (

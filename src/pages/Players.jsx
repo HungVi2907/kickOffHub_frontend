@@ -13,6 +13,9 @@ export default function Players() {
   const [searchQuery, setSearchQuery] = useState('')
   const [page, setPage] = useState(1)
   const [limit] = useState(20)
+  const [popularPlayers, setPopularPlayers] = useState([])
+  const [popularLoading, setPopularLoading] = useState(false)
+  const [popularError, setPopularError] = useState(null)
 
   useEffect(() => {
     const fetchPlayers = async () => {
@@ -43,6 +46,33 @@ export default function Players() {
     fetchPlayers()
   }, [page, searchQuery, limit])
 
+  useEffect(() => {
+    let ignore = false
+    const fetchPopularPlayers = async () => {
+      setPopularLoading(true)
+      setPopularError(null)
+      try {
+        const response = await apiClient.get('/players/popular', { params: { page: 1, limit: 8 } })
+        if (!ignore) {
+          setPopularPlayers(response.data.data || [])
+        }
+      } catch (err) {
+        if (!ignore) {
+          setPopularError(err.response?.data?.error || 'Failed to load fan favorites')
+        }
+      } finally {
+        if (!ignore) {
+          setPopularLoading(false)
+        }
+      }
+    }
+
+    fetchPopularPlayers()
+    return () => {
+      ignore = true
+    }
+  }, [])
+
   const handleSearch = (e) => {
     e.preventDefault()
     setPage(1) // Reset to first page on search
@@ -68,6 +98,42 @@ export default function Players() {
           Browse and search football players. View detailed player information and statistics.
         </p>
       </header>
+
+      <section className="space-y-3 rounded-2xl border border-yellow-100 bg-amber-50/70 p-4 shadow-sm">
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-amber-500">
+            Fan favourites
+          </p>
+          <span className="text-sm text-amber-700/80">
+            Spotlight on players marked as <code className="rounded bg-white/60 px-1">isPopular</code>
+          </span>
+        </div>
+        {popularLoading && <p className="text-sm text-amber-700">Loading featured players...</p>}
+        {popularError && <p className="text-sm text-red-500">{popularError}</p>}
+        {!popularLoading && !popularError && popularPlayers.length > 0 && (
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {popularPlayers.map((player) => (
+              <Link key={`popular-${player.id}`} to={`/players/${player.id}`} className="group">
+                <article className="flex items-center gap-3 rounded-2xl border border-amber-200 bg-white/90 p-3 shadow-sm transition hover:shadow-lg">
+                  <img
+                    src={player.photo || 'https://placehold.co/80x80?text=Player'}
+                    alt={player.name}
+                    className="h-16 w-16 rounded-full object-cover shadow-inner"
+                  />
+                  <div>
+                    <h3 className="font-semibold text-slate-900 group-hover:text-primary-600">{player.name}</h3>
+                    <p className="text-sm text-slate-600">{player.position || 'Unknown position'}</p>
+                    <p className="text-xs uppercase tracking-[0.2em] text-amber-500">Popular pick</p>
+                  </div>
+                </article>
+              </Link>
+            ))}
+          </div>
+        )}
+        {!popularLoading && !popularError && popularPlayers.length === 0 && (
+          <p className="text-sm text-slate-500">We have not flagged anyone as popular yet. Check back soon!</p>
+        )}
+      </section>
 
       <form onSubmit={handleSearch} className="flex gap-2">
         <input
