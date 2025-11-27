@@ -22,9 +22,9 @@ export default function Register() {
     const hasNumber = /\d/.test(form.password)
     const hasUpper = /[A-Z]/.test(form.password)
     return [
-      { label: 'Tối thiểu 8 ký tự', passed: hasLength },
-      { label: 'Chứa ít nhất 1 số', passed: hasNumber },
-      { label: 'Có chữ in hoa', passed: hasUpper },
+      { label: 'At least 8 characters', passed: hasLength },
+      { label: 'Contains at least one number', passed: hasNumber },
+      { label: 'Includes an uppercase letter', passed: hasUpper },
     ]
   }, [form.password])
 
@@ -41,10 +41,10 @@ export default function Register() {
 
     try {
       if (form.password !== form.confirmPassword) {
-        throw new Error('Mật khẩu xác nhận chưa trùng khớp.')
+        throw new Error('Confirmation password does not match.')
       }
       if (!form.acceptTerms) {
-        throw new Error('Bạn cần đồng ý với điều khoản cộng đồng KickOff Hub.')
+        throw new Error('You must agree to the KickOff Hub community terms.')
       }
       const payload = {
         name: form.name.trim(),
@@ -52,10 +52,10 @@ export default function Register() {
         password: form.password,
       }
       await apiClient.post('/auth/register', payload)
-      setSuccess('Đăng ký thành công! Vui lòng đăng nhập để bắt đầu.')
+      setSuccess('Registration successful! Please sign in to get started.')
       setTimeout(() => navigate(ROUTES.login), 1200)
     } catch (err) {
-      const message = err.response?.data?.error || err.response?.data?.message || err.message || 'Đăng ký thất bại'
+      const message = err.response?.data?.error || err.response?.data?.message || err.message || 'Registration failed'
       setError(message)
     } finally {
       setLoading(false)
@@ -63,13 +63,13 @@ export default function Register() {
   }
   return (
     <AuthLayout
-      title="Tạo tài khoản KickOff Hub"
-      subtitle="Đồng hành cùng các nhà phân tích, HLV và người hâm mộ hiểu sâu trò chơi đẹp nhất thế giới."
+      title="Create your KickOff Hub account"
+      subtitle="Join analysts, coaches, and fans who dive deeper into the beautiful game."
       footer={
         <>
-          Đã có tài khoản?{' '}
+          Already have an account?{' '}
           <Link to={ROUTES.login} className="font-medium text-primary-600 hover:text-primary-500">
-            Đăng nhập ngay
+            Sign in now
           </Link>
         </>
       }
@@ -78,7 +78,7 @@ export default function Register() {
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor="name" className="mb-1 block text-sm font-medium text-slate-700">
-              Họ và tên
+              Full name
             </label>
             <input
               id="name"
@@ -88,12 +88,12 @@ export default function Register() {
               value={form.name}
               onChange={handleChange}
               className="w-full rounded-xl border border-slate-200 bg-white/80 px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200"
-              placeholder="Nguyễn Văn A"
+              placeholder="Alex Nguyen"
             />
           </div>
           <div>
             <label htmlFor="email" className="mb-1 block text-sm font-medium text-slate-700">
-              Email công việc / cá nhân
+              Work or personal email
             </label>
             <input
               id="email"
@@ -112,7 +112,7 @@ export default function Register() {
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor="password" className="mb-1 block text-sm font-medium text-slate-700">
-              Mật khẩu
+              Password
             </label>
             <input
               id="password"
@@ -128,7 +128,7 @@ export default function Register() {
           </div>
           <div>
             <label htmlFor="confirmPassword" className="mb-1 block text-sm font-medium text-slate-700">
-              Xác nhận mật khẩu
+              Confirm password
             </label>
             <input
               id="confirmPassword"
@@ -138,13 +138,13 @@ export default function Register() {
               value={form.confirmPassword}
               onChange={handleChange}
               className="w-full rounded-xl border border-slate-200 bg-white/80 px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200"
-              placeholder="Nhập lại mật khẩu"
+              placeholder="Re-enter your password"
             />
           </div>
         </div>
 
         <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Mức độ an toàn</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Password strength</p>
           <ul className="mt-3 space-y-2 text-sm text-slate-600">
             {passwordChecklist.map((item) => (
               <li key={item.label} className="flex items-center gap-2">
@@ -171,11 +171,11 @@ export default function Register() {
             required
           />
           <span>
-            Tôi đồng ý với{' '}
+            I agree to the{' '}
             <a href="https://kickoffhub-api.onrender.com/policy" className="font-semibold text-primary-600" target="_blank" rel="noreferrer">
-              điều khoản cộng đồng
+              community guidelines
             </a>{' '}
-            và cam kết chia sẻ nội dung tích cực.
+            and commit to sharing positive content.
           </span>
         </label>
 
@@ -187,7 +187,7 @@ export default function Register() {
           disabled={loading}
           className="inline-flex w-full items-center justify-center rounded-xl bg-primary-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {loading ? 'Đang khởi tạo...' : 'Hoàn tất đăng ký'}
+          {loading ? 'Creating your account...' : 'Complete registration'}
         </button>
       </form>
     </AuthLayout>

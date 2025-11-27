@@ -19,8 +19,8 @@ export default function Login() {
 
   const highlights = useMemo(
     () => [
-      { badge: 'Realtime', text: 'Theo dõi tỉ số và phân tích dữ liệu trong thời gian thực.' },
-      { badge: 'An toàn', text: 'Tài khoản được bảo vệ bằng mã hóa JWT và xác thực đa tầng.' },
+      { badge: 'Realtime', text: 'Track live scores and data insights in real time.' },
+      { badge: 'Security', text: 'Accounts are protected via JWT encryption and layered auth.' },
     ],
     [],
   )
@@ -44,13 +44,13 @@ export default function Login() {
     try {
       const { data } = await apiClient.post('/auth/login', form)
       if (!data?.token || !data?.user) {
-        throw new Error('Phản hồi đăng nhập không hợp lệ')
+        throw new Error('Invalid login response')
       }
       login({ token: data.token, user: data.user })
       const redirectTo = location.state?.from?.pathname || ROUTES.forum
       navigate(redirectTo, { replace: true })
     } catch (err) {
-      const message = err.response?.data?.error || err.response?.data?.message || err.message || 'Đăng nhập thất bại'
+      const message = err.response?.data?.error || err.response?.data?.message || err.message || 'Failed to sign in'
       setError(message)
     } finally {
       setLoading(false)
@@ -59,13 +59,13 @@ export default function Login() {
 
   return (
     <AuthLayout
-      title="Chào mừng trở lại"
-      subtitle="Đăng nhập để theo dõi bài viết yêu thích, lưu chiến thuật và tham gia thảo luận với cộng đồng chuyên sâu."
+      title="Welcome back"
+      subtitle="Sign in to follow favorite posts, save tactics, and join the expert community conversation."
       footer={
         <>
-          Chưa có tài khoản?{' '}
+          Need an account?{' '}
           <Link to={ROUTES.register} className="font-medium text-primary-600 hover:text-primary-500">
-            Đăng ký ngay
+            Sign up now
           </Link>
         </>
       }
@@ -97,13 +97,13 @@ export default function Login() {
 
         <div>
           <label htmlFor="password" className="mb-1 flex items-center justify-between text-sm font-medium text-slate-700">
-            <span>Mật khẩu</span>
+            <span>Password</span>
             <button
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
               className="text-xs font-semibold uppercase tracking-widest text-primary-600 hover:text-primary-500"
             >
-              {showPassword ? 'Ẩn' : 'Hiện'}
+              {showPassword ? 'Hide' : 'Show'}
             </button>
           </label>
           <div className="relative">
@@ -119,7 +119,7 @@ export default function Login() {
               placeholder="••••••••"
             />
           </div>
-          <p className="mt-2 text-xs text-slate-400">Sử dụng mật khẩu tối thiểu 8 ký tự để tăng bảo mật.</p>
+          <p className="mt-2 text-xs text-slate-400">Use at least 8 characters for stronger security.</p>
         </div>
 
         {error && (
@@ -133,7 +133,7 @@ export default function Login() {
           disabled={loading}
           className="inline-flex w-full items-center justify-center rounded-xl bg-primary-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {loading ? 'Đang đăng nhập...' : 'Đăng nhập vào KickOff Hub'}
+          {loading ? 'Signing you in...' : 'Sign in to KickOff Hub'}
         </button>
       </form>
     </AuthLayout>

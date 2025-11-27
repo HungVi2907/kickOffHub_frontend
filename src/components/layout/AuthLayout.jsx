@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom'
 
 const defaultHighlights = [
-  { badge: 'Cộng đồng', text: 'Hơn 5.000 người yêu bóng đá đang thảo luận mỗi ngày.' },
-  { badge: 'Phân tích', text: 'Bài viết chuyên sâu về chiến thuật, cầu thủ và giải đấu.' },
-  { badge: 'Sự kiện', text: 'Cập nhật tin nóng và lịch thi đấu ngay khi công bố.' },
+  { badge: 'Community', text: 'More than 5,000 football fans exchange insights every day.' },
+  { badge: 'Analytics', text: 'In-depth pieces covering tactics, players, and competitions.' },
+  { badge: 'Events', text: 'Breaking news and fixture alerts the moment they drop.' },
 ]
 
 export default function AuthLayout({ title, subtitle, children, footer, highlights = defaultHighlights }) {
@@ -31,10 +31,10 @@ export default function AuthLayout({ title, subtitle, children, footer, highligh
         <aside className="relative hidden overflow-hidden rounded-2xl border border-slate-100 bg-gradient-to-br from-[#0b132b] via-[#1c2541] to-[#3d66e6] text-white lg:flex lg:flex-col lg:justify-between">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.15),_transparent_55%)]" aria-hidden="true" />
           <div className="relative z-10 p-8">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary-100/80">Cộng đồng bóng đá</p>
-            <h2 className="mt-4 text-3xl font-semibold leading-tight">Cùng xây dựng thư viện kiến thức bóng đá hiện đại</h2>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary-100/80">Football community</p>
+            <h2 className="mt-4 text-3xl font-semibold leading-tight">Build the modern football knowledge library together</h2>
             <p className="mt-3 text-sm text-white/80">
-              Tham gia thảo luận, kết nối các chuyên gia dữ liệu và cập nhật chiến thuật mới nhất cùng KickOff Hub.
+              Join discussions, connect with data experts, and stay ahead of tactical trends on KickOff Hub.
             </p>
           </div>
           <ul className="relative z-10 space-y-4 px-8 pb-8">
