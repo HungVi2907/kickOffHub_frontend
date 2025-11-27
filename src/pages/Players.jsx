@@ -104,9 +104,6 @@ export default function Players() {
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-amber-500">
             Fan favourites
           </p>
-          <span className="text-sm text-amber-700/80">
-            Spotlight on players marked as <code className="rounded bg-white/60 px-1">isPopular</code>
-          </span>
         </div>
         {popularLoading && <p className="text-sm text-amber-700">Loading featured players...</p>}
         {popularError && <p className="text-sm text-red-500">{popularError}</p>}

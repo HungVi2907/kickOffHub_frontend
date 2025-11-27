@@ -16,9 +16,39 @@ export default function Teams() {
   const [teamVenue, setTeamVenue] = useState(null)
   const [players, setPlayers] = useState([])
   const [loadingPlayers, setLoadingPlayers] = useState(false)
+  const [popularTeams, setPopularTeams] = useState([])
+  const [popularLoading, setPopularLoading] = useState(false)
+  const [popularError, setPopularError] = useState(null)
 
   useEffect(() => {
     fetchInitialData()
+  }, [])
+
+  useEffect(() => {
+    let ignore = false
+    const fetchPopularTeams = async () => {
+      setPopularLoading(true)
+      setPopularError(null)
+      try {
+        const response = await apiClient.get('/teams/popular', { params: { page: 1, limit: 8 } })
+        if (!ignore) {
+          setPopularTeams(response.data?.data || [])
+        }
+      } catch (err) {
+        if (!ignore) {
+          setPopularError(err.response?.data?.error || 'Failed to load popular teams')
+        }
+      } finally {
+        if (!ignore) {
+          setPopularLoading(false)
+        }
+      }
+    }
+
+    fetchPopularTeams()
+    return () => {
+      ignore = true
+    }
   }, [])
 
   useEffect(() => {
@@ -134,6 +164,38 @@ export default function Teams() {
           Browse teams, view venue details and players filtered by league & season.
         </p>
       </header>
+
+      <section className="space-y-3 rounded-2xl border border-primary-100 bg-primary-50/70 p-4 shadow-sm">
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary-500">Popular teams</p>
+          <span className="text-sm text-primary-700/80">Community favourites highlighted here.</span>
+        </div>
+        {popularLoading && <p className="text-sm text-primary-700">Loading popular clubs...</p>}
+        {popularError && <p className="text-sm text-red-500">{popularError}</p>}
+        {!popularLoading && !popularError && popularTeams.length > 0 && (
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {popularTeams.map((team) => (
+              <Link key={`popular-team-${team.id}`} to={`/teams/${team.id}`} className="group">
+                <article className="flex items-center gap-3 rounded-2xl border border-primary-100 bg-white/90 p-3 shadow-sm transition hover:shadow-lg">
+                  <img
+                    src={team.logo || 'https://placehold.co/80x80?text=Team'}
+                    alt={team.name}
+                    className="h-16 w-16 rounded-full object-cover shadow-inner"
+                  />
+                  <div>
+                    <h3 className="font-semibold text-slate-900 group-hover:text-primary-600">{team.name}</h3>
+                    <p className="text-sm text-slate-600">{team.country || 'Unknown country'}</p>
+                    <p className="text-xs uppercase tracking-[0.2em] text-primary-500">Fan favourite</p>
+                  </div>
+                </article>
+              </Link>
+            ))}
+          </div>
+        )}
+        {!popularLoading && !popularError && popularTeams.length === 0 && (
+          <p className="text-sm text-slate-500">No clubs are marked popular yet.</p>
+        )}
+      </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <section className="lg:col-span-2 space-y-4">
