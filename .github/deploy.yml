@@ -1,0 +1,76 @@
+name: Deploy Frontend (Vite) to EC2
+
+on:
+  push:
+    branches: ["main"]   # đổi branch nếu cần
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies (pnpm or npm)
+        run: |
+          if [ -f pnpm-lock.yaml ]; then
+            npm install -g pnpm
+            pnpm install --frozen-lockfile
+            pnpm build
+          else
+            npm ci
+            npm run build
+          fi
+        env:
+          CI: true
+
+      - name: Archive build folder
+        run: |
+          # Vite usually outputs to "dist"
+          tar -czf frontend-dist.tgz dist
+
+      - name: Copy build archive to EC2 via SCP
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          source: "frontend-dist.tgz"
+          target: "/home/${{ secrets.EC2_USER }}/kickOffHub_frontend_build/"
+
+      - name: Extract and deploy on EC2, rsync to nginx
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            set -e
+
+            BUILD_TMP="/home/$USER/kickOffHub_frontend_build"
+            mkdir -p "$BUILD_TMP"
+            cd "$BUILD_TMP"
+
+            # extract archive (overwrite previous)
+            tar -xzf frontend-dist.tgz
+            # ensure dist exists
+            if [ ! -d dist ]; then
+              echo "ERROR: dist/ not found after extraction"
+              ls -la
+              exit 1
+            fi
+
+            # sync to nginx webroot (change if your webroot differs)
+            sudo rsync -av --delete dist/ /var/www/html/
+
+            # reload nginx
+            sudo systemctl reload nginx || sudo service nginx reload
+
+            echo "Deploy finished: $(date)"
