@@ -1,7 +1,9 @@
 import axios from 'axios'
 import useAuthStore from '../store/useAuthStore.js'
 
-const fallbackBaseUrl = import.meta.env.DEV ? '/api' : 'https://kickoffhub-api.onrender.com/api'
+const fallbackBaseUrl = import.meta.env.DEV
+	?'/api'
+	: 'https://api.kickoffhub.space/api';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || fallbackBaseUrl
 
