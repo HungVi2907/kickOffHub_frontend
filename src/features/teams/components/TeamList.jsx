@@ -27,7 +27,7 @@ function TeamRow({ team, isActive, onSelect }) {
         className="text-xs font-semibold uppercase tracking-widest text-primary-600 hover:text-primary-500"
         onClick={(event) => event.stopPropagation()}
       >
-        Chi tiết
+        Details
       </Link>
     </li>
   )
@@ -49,7 +49,7 @@ export default function TeamList({ teams, loading, onSelect, selectedTeam }) {
   if (!teams?.length) {
     return (
       <Card className="p-6 text-sm text-slate-500">
-        Không tìm thấy đội bóng phù hợp với bộ lọc hiện tại.
+        No teams found matching current filters.
       </Card>
     )
   }

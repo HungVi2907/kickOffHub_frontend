@@ -25,9 +25,9 @@ export default function RegisterPage() {
     const hasNumber = /\d/.test(form.password)
     const hasUpper = /[A-Z]/.test(form.password)
     return [
-      { label: 'Tối thiểu 8 ký tự', passed: hasLength },
-      { label: 'Chứa ít nhất 1 số', passed: hasNumber },
-      { label: 'Có chữ in hoa', passed: hasUpper },
+      { label: 'At least 8 characters', passed: hasLength },
+      { label: 'Contains at least 1 number', passed: hasNumber },
+      { label: 'Contains uppercase letter', passed: hasUpper },
     ]
   }, [form.password])
 
@@ -43,10 +43,10 @@ export default function RegisterPage() {
 
     try {
       if (form.password !== form.confirmPassword) {
-        throw new Error('Mật khẩu xác nhận chưa trùng khớp.')
+        throw new Error('Passwords do not match.')
       }
       if (!form.acceptTerms) {
-        throw new Error('Bạn cần đồng ý với điều khoản cộng đồng KickOff Hub.')
+        throw new Error('You must agree to the KickOff Hub community guidelines.')
       }
       setLoading(true)
       await register({
@@ -54,10 +54,10 @@ export default function RegisterPage() {
         email: form.email.trim(),
         password: form.password,
       })
-      setSuccess('Đăng ký thành công! Vui lòng đăng nhập để bắt đầu.')
+      setSuccess('Registration successful! Please log in to get started.')
       setTimeout(() => navigate(ROUTES.login), 1200)
     } catch (err) {
-      setError(err?.message || 'Đăng ký thất bại')
+      setError(err?.message || 'Registration failed')
     } finally {
       setLoading(false)
     }
@@ -65,13 +65,13 @@ export default function RegisterPage() {
 
   return (
     <AuthLayout
-      title="Tạo tài khoản KickOff Hub"
-      subtitle="Đồng hành cùng các nhà phân tích, HLV và người hâm mộ hiểu sâu trò chơi đẹp nhất thế giới."
+      title="Create a KickOff Hub account"
+      subtitle="Join analysts, coaches, and fans who understand the beautiful game at its deepest level."
       footer={
         <>
-          Đã có tài khoản?{' '}
+          Already have an account?{' '}
           <Link to={ROUTES.login} className="font-medium text-primary-600 hover:text-primary-500">
-            Đăng nhập ngay
+            Log in now
           </Link>
         </>
       }
@@ -83,8 +83,8 @@ export default function RegisterPage() {
             name="name"
             type="text"
             required
-            label="Họ và tên"
-            placeholder="Nguyễn Văn A"
+            label="Full name"
+            placeholder="John Doe"
             value={form.name}
             onChange={handleChange}
           />
@@ -94,7 +94,7 @@ export default function RegisterPage() {
             type="email"
             autoComplete="email"
             required
-            label="Email công việc / cá nhân"
+            label="Work / personal email"
             placeholder="you@example.com"
             value={form.email}
             onChange={handleChange}
@@ -108,7 +108,7 @@ export default function RegisterPage() {
             type="password"
             autoComplete="new-password"
             required
-            label="Mật khẩu"
+            label="Password"
             placeholder="••••••••"
             value={form.password}
             onChange={handleChange}
@@ -118,15 +118,15 @@ export default function RegisterPage() {
             name="confirmPassword"
             type="password"
             required
-            label="Xác nhận mật khẩu"
-            placeholder="Nhập lại mật khẩu"
+            label="Confirm password"
+            placeholder="Re-enter password"
             value={form.confirmPassword}
             onChange={handleChange}
           />
         </div>
 
         <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Mức độ an toàn</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Password strength</p>
           <ul className="mt-3 space-y-2 text-sm text-slate-600">
             {passwordChecklist.map((item) => (
               <li key={item.label} className="flex items-center gap-2">
@@ -155,16 +155,16 @@ export default function RegisterPage() {
             required
           />
           <span>
-            Tôi đồng ý với{' '}
+            I agree to the{' '}
             <a
               href="https://kickoffhub-api.onrender.com/policy"
               className="font-semibold text-primary-600"
               target="_blank"
               rel="noreferrer"
             >
-              điều khoản cộng đồng
+              community guidelines
             </a>{' '}
-            và cam kết chia sẻ nội dung tích cực.
+            and commit to sharing positive content.
           </span>
         </label>
 
@@ -172,7 +172,7 @@ export default function RegisterPage() {
         {success && <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-600">{success}</p>}
 
         <Button type="submit" className="w-full" isLoading={loading}>
-          {loading ? 'Đang khởi tạo...' : 'Hoàn tất đăng ký'}
+          {loading ? 'Creating account...' : 'Complete registration'}
         </Button>
       </form>
     </AuthLayout>

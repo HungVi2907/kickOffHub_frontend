@@ -27,7 +27,7 @@ export function usePlayers(params = {}) {
       })
     } catch (error) {
       setState({ data: [], pagination: null, loading: false, error })
-      toast.error(error.message || 'Không thể tải danh sách cầu thủ')
+      toast.error(error.message || 'Unable to load players')
     }
   }, [paramsKey, toast])
 
@@ -61,7 +61,7 @@ export function usePlayerSearch(query, options = { limit: 100 }) {
       .catch((error) => {
         if (!isMounted) return
         setState({ data: [], loading: false, error })
-        toast.error(error.message || 'Không thể tìm kiếm cầu thủ')
+        toast.error(error.message || 'Unable to search players')
       })
 
     return () => {
@@ -97,7 +97,7 @@ export function usePopularPlayers(params = {}) {
       .catch((error) => {
         if (!isMounted) return
         setState({ data: [], loading: false, error })
-        toast.error(error.message || 'Không thể tải danh sách cầu thủ nổi bật')
+        toast.error(error.message || 'Unable to load popular players')
       })
 
     return () => {
@@ -120,7 +120,7 @@ export function usePlayerDetail(playerId) {
       setState({ data: response?.data ?? response, loading: false, error: null })
     } catch (error) {
       setState({ data: null, loading: false, error })
-      toast.error(error.message || 'Không thể tải thông tin cầu thủ')
+      toast.error(error.message || 'Unable to load player details')
     }
   }, [playerId, toast])
 
@@ -147,7 +147,7 @@ export function useTeamPlayers({ leagueId, teamId, season }) {
       setState({ data: players ?? [], loading: false, error: null })
     } catch (error) {
       setState({ data: [], loading: false, error })
-      toast.error(error.message || 'Không thể tải danh sách cầu thủ theo đội')
+      toast.error(error.message || 'Unable to load team players')
     }
   }, [leagueId, teamId, season, toast])
 
@@ -186,7 +186,7 @@ export function usePlayerStats(playerId, filters = {}) {
         setState({ data: stats, loading: false, error: null })
       } catch (error) {
         setState({ data: [], loading: false, error })
-        toast.error(error.message || 'Không thể tải thống kê cầu thủ')
+        toast.error(error.message || 'Unable to load player statistics')
       }
     },
     [playerId, filtersKey, toast],

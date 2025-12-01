@@ -56,9 +56,10 @@ const buildTeamCard = (team) => (
 )
 
 const buildCountryCard = (country) => (
-	<div
+	<Link
 		key={`country-${country.id}`}
-		className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm"
+		to={`${ROUTES.countries}/${country.id}`}
+		className="group flex items-center gap-4 rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm transition hover:border-primary-300 hover:shadow-md"
 	>
 		{country.flag ? (
 			<img src={withFallback(country.flag)} alt={country.name} className="h-10 w-14 rounded object-cover" />
@@ -67,12 +68,13 @@ const buildCountryCard = (country) => (
 				{country.code || 'N/A'}
 			</div>
 		)}
-		<div>
+		<div className="flex-1">
 			<p className="text-sm uppercase tracking-[0.2em] text-amber-500">Country</p>
 			<h3 className="text-lg font-semibold text-slate-900">{country.name}</h3>
 			<p className="text-sm text-slate-600">Code: {country.code || '—'}</p>
 		</div>
-	</div>
+		<span className="text-sm font-semibold text-primary-600 transition group-hover:translate-x-1">View</span>
+	</Link>
 )
 
 const defaultResults = { players: [], teams: [], countries: [] }

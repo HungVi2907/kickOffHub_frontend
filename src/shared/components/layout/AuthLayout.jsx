@@ -50,7 +50,7 @@ export default function AuthLayout({ title, subtitle, footer, highlights = [], c
           <div className="max-w-md text-white">
             <h3 className="text-4xl font-bold">KickOff Hub</h3>
             <p className="mt-4 text-lg opacity-90">
-              Nền tảng phân tích bóng đá chuyên sâu dành cho người hâm mộ và chuyên gia
+              An in-depth football analytics platform for fans and experts
             </p>
           </div>
         </div>

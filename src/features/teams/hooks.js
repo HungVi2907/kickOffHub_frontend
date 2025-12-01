@@ -35,7 +35,7 @@ export function useTeamsList(params = {}) {
       setState({ data: data ?? [], loading: false, error: null })
     } catch (error) {
       setState({ data: [], loading: false, error })
-      toast.error(error.message || 'Không thể tải danh sách đội bóng')
+      toast.error(error.message || 'Unable to load teams list')
     }
   }, [paramsKey, toast])
 
@@ -66,7 +66,7 @@ export function useTeamsMeta() {
       } catch (error) {
         if (!isMounted) return
         setState({ leagues: [], seasons: [], loading: false, error })
-        toast.error(error.message || 'Không thể tải danh sách mùa giải và giải đấu')
+        toast.error(error.message || 'Unable to load seasons and leagues')
       }
     }
 
@@ -88,11 +88,14 @@ export function usePopularTeams(params = {}) {
     setState((prev) => ({ ...prev, loading: true, error: null }))
     try {
       const response = await teamApi.popular(paramsKey ? JSON.parse(paramsKey) : {})
-      const data = Array.isArray(response?.data) ? response.data : response
-      setState({ data: data ?? [], loading: false, error: null })
+      // Response structure: { success, message, data: { data: [...], pagination: {...} } }
+      // Extract the actual teams array from nested data
+      const payload = response?.data ?? response
+      const teams = Array.isArray(payload?.data) ? payload.data : (Array.isArray(payload) ? payload : [])
+      setState({ data: teams, loading: false, error: null })
     } catch (error) {
       setState({ data: [], loading: false, error })
-      toast.error(error.message || 'Không thể tải danh sách đội nổi bật')
+      toast.error(error.message || 'Unable to load popular teams')
     }
   }, [paramsKey, toast])
 
@@ -111,21 +114,26 @@ export function useTeamDetail(teamId) {
     if (!teamId) return
     setState((prev) => ({ ...prev, loading: true, error: null }))
     try {
-      const [teamRes, venueRes] = await Promise.all([
-        teamApi.detail(teamId),
-        // venue id is inside team detail so fetch after first request
-        Promise.resolve(null),
-      ])
+      const teamRes = await teamApi.detail(teamId)
       const teamData = teamRes?.data ?? teamRes
       let venueData = null
+      
+      // Fetch venue separately and silently handle errors
       if (teamData?.venue_id) {
-        const venueResponse = await teamApi.venue(teamData.venue_id)
-        venueData = venueResponse?.data ?? venueResponse
+        try {
+          const venueResponse = await teamApi.venue(teamData.venue_id)
+          venueData = venueResponse?.data ?? venueResponse
+        } catch (venueError) {
+          // Silently handle venue fetch errors - just log to console
+          console.warn('Venue fetch failed:', venueError.message || venueError)
+          venueData = null
+        }
       }
+      
       setState({ team: teamData, venue: venueData, loading: false, error: null })
     } catch (error) {
       setState({ team: null, venue: null, loading: false, error })
-      toast.error(error.message || 'Không thể tải dữ liệu đội bóng')
+      toast.error(error.message || 'Unable to load team data')
     }
   }, [teamId, toast])
 
@@ -158,7 +166,7 @@ export function useLeagueDetail(leagueId) {
       .catch((error) => {
         if (!isMounted) return
         setState({ data: null, loading: false, error })
-        toast.error(error.message || 'Không thể tải thông tin giải đấu')
+        toast.error(error.message || 'Unable to load league information')
       })
 
     return () => {
@@ -185,7 +193,7 @@ export function useLeagueTeams(leagueId, season) {
       setState({ data: payload ?? [], loading: false, error: null })
     } catch (error) {
       setState({ data: [], loading: false, error })
-      toast.error(error.message || 'Không thể tải danh sách câu lạc bộ của giải đấu')
+      toast.error(error.message || 'Unable to load league teams')
     }
   }, [leagueId, season, toast])
 

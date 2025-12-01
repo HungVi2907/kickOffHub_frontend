@@ -14,7 +14,7 @@ export default function GlobalLoader({ show }) {
         >
           <div className={cn('flex flex-col items-center gap-2 text-sm font-medium text-slate-600')}>
             <Spinner size="lg" className="text-primary-600" />
-            <p>Đang tải dữ liệu...</p>
+            <p>Loading data...</p>
           </div>
         </motion.div>
       )}

@@ -56,10 +56,10 @@ export default function LeaguePage() {
           <header className="space-y-2">
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary-500">Competitions</p>
             <h1 className="text-3xl font-bold text-slate-900">Leagues</h1>
-            <p className="text-sm text-slate-600">Chọn giải đấu để xem chi tiết và danh sách câu lạc bộ theo mùa giải.</p>
+            <p className="text-sm text-slate-600">Select a league to view details and club lists by season.</p>
           </header>
           <Card className="p-6">
-            <h2 className="text-lg font-semibold text-slate-900">Các mùa giải được hỗ trợ</h2>
+            <h2 className="text-lg font-semibold text-slate-900">Supported seasons</h2>
             {meta.loading ? (
               <Skeleton className="mt-4 h-6 w-full" />
             ) : (
@@ -79,8 +79,8 @@ export default function LeaguePage() {
 
         <section className="space-y-4">
           <div>
-            <h2 className="text-2xl font-semibold text-slate-900">Danh sách giải đấu</h2>
-            <p className="text-sm text-slate-600">Bấm vào giải đấu để xem chi tiết và đội tham dự.</p>
+            <h2 className="text-2xl font-semibold text-slate-900">League list</h2>
+            <p className="text-sm text-slate-600">Click on a league to view details and participating teams.</p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {meta.loading &&
@@ -125,7 +125,7 @@ export default function LeaguePage() {
   return (
     <div className="space-y-6">
       <Button variant="ghost" onClick={() => navigate('/league')}>
-        ← Quay lại danh sách
+        ← Back to list
       </Button>
 
       <Card className="p-6 space-y-4">
@@ -144,7 +144,7 @@ export default function LeaguePage() {
             onChange={(event) => setSeason(Number(event.target.value))}
             className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm focus:border-primary-500 focus:outline-none"
           >
-            <option value="">Chọn mùa giải</option>
+            <option value="">Select season</option>
             {seasonOptions.map((value) => (
               <option key={`season-${value}`} value={value}>
                 {value}
@@ -152,15 +152,15 @@ export default function LeaguePage() {
             ))}
           </select>
           <Button variant="secondary" onClick={() => leagueTeams.refetch?.()}>
-            Làm mới danh sách đội
+            Refresh team list
           </Button>
         </div>
       </Card>
 
       <section className="space-y-3">
-        <h2 className="text-2xl font-semibold text-slate-900">Câu lạc bộ tham dự</h2>
+        <h2 className="text-2xl font-semibold text-slate-900">Participating clubs</h2>
         {leagueTeams.error && (
-          <p className="text-sm text-red-500">{leagueTeams.error.message || 'Không thể tải câu lạc bộ.'}</p>
+          <p className="text-sm text-red-500">{leagueTeams.error.message || 'Unable to load clubs.'}</p>
         )}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {leagueTeams.loading ? (
@@ -176,7 +176,7 @@ export default function LeaguePage() {
               </Card>
             ))
           ) : (
-            <p className="col-span-full text-sm text-slate-500">Không có câu lạc bộ nào cho mùa giải này.</p>
+            <p className="col-span-full text-sm text-slate-500">No clubs available for this season.</p>
           )}
         </div>
       </section>

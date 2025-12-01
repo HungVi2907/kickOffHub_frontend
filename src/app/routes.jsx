@@ -9,8 +9,10 @@ const AboutPage = lazy(() => import('@/features/posts/pages/About.jsx'))
 const SearchPage = lazy(() => import('@/features/posts/pages/Search.jsx'))
 const ForumPage = lazy(() => import('@/features/posts/pages/Forum.jsx'))
 const PostCreatePage = lazy(() => import('@/features/posts/pages/PostCreate.jsx'))
+const PostEditPage = lazy(() => import('@/features/posts/pages/PostEdit.jsx'))
 const PostDetailPage = lazy(() => import('@/features/posts/pages/PostDetail.jsx'))
 const CountriesPage = lazy(() => import('@/features/teams/pages/Countries.jsx'))
+const CountryDetailPage = lazy(() => import('@/features/countries/pages/CountryDetail.jsx'))
 const LeaguePage = lazy(() => import('@/features/teams/pages/League.jsx'))
 const TeamsPage = lazy(() => import('@/features/teams/pages/Teams.jsx'))
 const TeamDetailPage = lazy(() => import('@/features/teams/pages/TeamDetail.jsx'))
@@ -25,6 +27,7 @@ export default function AppRoutes({ location }) {
       <Route path="/" element={<AppLayout />}>
         <Route index element={<HomePage />} />
         <Route path="countries" element={<CountriesPage />} />
+        <Route path="countries/:countryId" element={<CountryDetailPage />} />
         <Route path="league" element={<LeaguePage />} />
         <Route path="league/:leagueId" element={<LeaguePage />} />
         <Route path="teams" element={<TeamsPage />} />
@@ -35,6 +38,7 @@ export default function AppRoutes({ location }) {
         <Route path="forum" element={<ForumPage />} />
         <Route element={<ProtectedRoute />}>
           <Route path="forum/new" element={<PostCreatePage />} />
+          <Route path="forum/:postId/edit" element={<PostEditPage />} />
         </Route>
         <Route path="forum/:postId" element={<PostDetailPage />} />
         <Route path="about" element={<AboutPage />} />

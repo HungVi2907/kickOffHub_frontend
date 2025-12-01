@@ -44,14 +44,14 @@ export default function TeamDetailPage() {
   }
 
   if (!team) {
-    return <p className="text-sm text-slate-500">Không tìm thấy đội bóng.</p>
+    return <p className="text-sm text-slate-500">Team not found.</p>
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Link to="/teams" className="text-sm font-semibold text-primary-600">
-          ← Danh sách đội bóng
+          ← Team list
         </Link>
         <h1 className="text-2xl font-bold text-slate-900">{team.name}</h1>
       </div>
@@ -62,7 +62,7 @@ export default function TeamDetailPage() {
             <div className="flex flex-wrap items-start gap-4">
               <img src={withFallback(team.logo)} alt={team.name} className="h-20 w-20 rounded-full border border-white/70" />
               <div>
-                <p className="text-sm uppercase tracking-[0.3em] text-slate-400">Câu lạc bộ</p>
+                <p className="text-sm uppercase tracking-[0.3em] text-slate-400">Club</p>
                 <h2 className="text-2xl font-bold text-slate-900">{team.name}</h2>
                 <p className="text-sm text-slate-600">
                   {team.country} • Founded {team.founded || 'N/A'}
@@ -71,7 +71,7 @@ export default function TeamDetailPage() {
             </div>
 
             <section className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Sân vận động</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Stadium</p>
               {venue ? (
                 <MotionDiv layout className="space-y-3">
                   {venue.image ? (
@@ -82,30 +82,30 @@ export default function TeamDetailPage() {
                     />
                   ) : (
                     <div className="flex h-48 items-center justify-center rounded-2xl bg-slate-100 text-sm text-slate-500">
-                      Chưa có hình ảnh sân vận động
+                      No stadium image available
                     </div>
                   )}
                   <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
                     <p className="font-semibold text-slate-800">{venue.name}</p>
                     <p>{venue.city}</p>
                     <p className="text-xs">{venue.address}</p>
-                    <p className="text-xs">Sức chứa: {venue.capacity || 'N/A'}</p>
+                    <p className="text-xs">Capacity: {venue.capacity || 'N/A'}</p>
                   </div>
                 </MotionDiv>
               ) : (
-                <p className="text-sm text-slate-500">Không có thông tin sân vận động.</p>
+                <p className="text-sm text-slate-500">No stadium information available.</p>
               )}
             </section>
 
             <section className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Đội hình</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Squad</p>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <select
                   value={selectedLeague}
                   onChange={(event) => setSelectedLeague(event.target.value)}
                   className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm focus:border-primary-500 focus:outline-none"
                 >
-                  <option value="">Chọn giải đấu</option>
+                  <option value="">Select league</option>
                   {meta.leagues.map((league) => (
                     <option key={league.id} value={league.id}>
                       {league.name}
@@ -117,7 +117,7 @@ export default function TeamDetailPage() {
                   onChange={(event) => setSelectedSeason(event.target.value)}
                   className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm focus:border-primary-500 focus:outline-none"
                 >
-                  <option value="">Chọn mùa giải</option>
+                  <option value="">Select season</option>
                   {meta.seasons.map((season) => (
                     <option key={season.season || season.id} value={season.season || season.id}>
                       {season.season || season.displayName || season.name}
@@ -125,12 +125,12 @@ export default function TeamDetailPage() {
                   ))}
                 </select>
                 <Button onClick={() => playersState.refetch?.()} variant="secondary">
-                  Tải đội hình
+                  Load squad
                 </Button>
               </div>
 
               {playersState.error && (
-                <p className="text-sm text-red-500">{playersState.error.message || 'Không thể tải cầu thủ'}</p>
+                <p className="text-sm text-red-500">{playersState.error.message || 'Unable to load players'}</p>
               )}
 
               <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
@@ -166,7 +166,7 @@ export default function TeamDetailPage() {
                   })
                 ) : (
                   <p className="col-span-full text-sm text-slate-500">
-                    Chọn giải đấu và mùa giải để xem đội hình.
+                    Select a league and season to view the squad.
                   </p>
                 )}
               </div>
@@ -176,11 +176,11 @@ export default function TeamDetailPage() {
 
         <div className="space-y-4">
           <Card className="p-4 text-sm text-slate-600">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Thông tin nhanh</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Quick info</p>
             <ul className="mt-3 space-y-2">
-              <li>Quốc gia: {team.country}</li>
-              <li>Thành lập: {team.founded || 'N/A'}</li>
-              <li>Sân nhà: {venue?.name || 'N/A'}</li>
+              <li>Country: {team.country}</li>
+              <li>Founded: {team.founded || 'N/A'}</li>
+              <li>Home venue: {venue?.name || 'N/A'}</li>
             </ul>
           </Card>
         </div>

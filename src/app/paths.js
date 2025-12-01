@@ -1,6 +1,7 @@
 export const ROUTES = {
   home: '/',
   countries: '/countries',
+  countryDetail: '/countries/:countryId',
   league: '/league',
   leagueDetail: '/league/:leagueId',
   teams: '/teams',

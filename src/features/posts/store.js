@@ -4,7 +4,7 @@ import { devtools } from 'zustand/middleware'
 const initialState = {
   tag: '',
   search: '',
-  sort: 'latest',
+  sort: 'newest',
   status: 'all',
   page: 1,
   limit: 9,

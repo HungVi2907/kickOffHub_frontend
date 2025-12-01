@@ -18,19 +18,19 @@ export default function PopularTeams({ teams, loading, error }) {
 
   if (error) {
     return (
-      <Card className="p-4 text-sm text-red-500">{error.message || 'Không thể tải danh sách câu lạc bộ nổi bật'}</Card>
+      <Card className="p-4 text-sm text-red-500">{error.message || 'Unable to load featured clubs'}</Card>
     )
   }
 
   if (!teams?.length) {
-    return <Card className="p-4 text-sm text-slate-500">Chưa có câu lạc bộ nào nổi bật.</Card>
+    return <Card className="p-4 text-sm text-slate-500">No featured clubs yet.</Card>
   }
 
   return (
     <Card className="space-y-3 p-4">
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary-500">Popular teams</p>
-        <p className="text-sm text-slate-600">Những câu lạc bộ được cộng đồng quan tâm nhất tuần qua.</p>
+        <p className="text-sm text-slate-600">Most followed clubs by the community this week.</p>
       </div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {teams.map((team) => (

@@ -1,11 +1,12 @@
 const sidebarItems = [
-  {
-    title: 'Quick links',
-    links: [
-      { label: 'Premier League overview', href: '/league' },
-      { label: 'All teams', href: '/teams' },
-    ],
-  },
+  // TEMPORARILY DISABLED - Quick Links section
+  // {
+  //   title: 'Quick links',
+  //   links: [
+  //     { label: 'Premier League overview', href: '/league' },
+  //     { label: 'All teams', href: '/teams' },
+  //   ],
+  // },
   {
     title: 'Resources',
     links: [

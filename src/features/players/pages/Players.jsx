@@ -48,15 +48,15 @@ export default function PlayersPage() {
       <header className="space-y-2">
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary-500">Players</p>
         <h1 className="text-3xl font-bold text-slate-900">Player Directory</h1>
-        <p className="max-w-2xl text-sm text-slate-600">Tìm kiếm và khám phá hồ sơ chi tiết của các cầu thủ.</p>
+        <p className="max-w-2xl text-sm text-slate-600">Search and explore detailed player profiles.</p>
       </header>
 
       <section className="space-y-3 rounded-2xl border border-amber-100 bg-amber-50/70 p-4 shadow-sm">
         <div className="flex items-center gap-2">
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-amber-500">Fan favourites</p>
-          <span className="text-xs text-amber-600">Được cộng đồng yêu thích nhiều nhất</span>
+          <span className="text-xs text-amber-600">Most loved by the community</span>
         </div>
-        {popularPlayers.loading && <p className="text-sm text-amber-700">Đang tải...</p>}
+        {popularPlayers.loading && <p className="text-sm text-amber-700">Loading...</p>}
         {popularPlayers.error && <p className="text-sm text-red-500">{popularPlayers.error.message}</p>}
         {!popularPlayers.loading && !popularPlayers.error && (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -76,7 +76,7 @@ export default function PlayersPage() {
                 </article>
               </Link>
             ))}
-            {!popularList.length && <p className="text-sm text-slate-500">Chưa có cầu thủ nào được đánh dấu nổi bật.</p>}
+            {!popularList.length && <p className="text-sm text-slate-500">No players marked as popular yet.</p>}
           </div>
         )}
       </section>
@@ -86,13 +86,13 @@ export default function PlayersPage() {
           type="text"
           value={inputValue}
           onChange={(event) => setInputValue(event.target.value)}
-          placeholder="Tìm cầu thủ theo tên..."
+          placeholder="Search players by name..."
           className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm focus:border-primary-500 focus:outline-none"
         />
-        <Button type="submit">Tìm kiếm</Button>
+        <Button type="submit">Search</Button>
       </form>
 
-      {listState.loading && <p className="text-center text-sm text-slate-500">Đang tải cầu thủ...</p>}
+      {listState.loading && <p className="text-center text-sm text-slate-500">Loading players...</p>}
       {listState.error && <p className="text-center text-sm text-red-500">{listState.error.message}</p>}
 
       {!listState.loading && !listState.error && (
@@ -116,19 +116,19 @@ export default function PlayersPage() {
                 </Card>
               </Link>
             ))}
-            {!players.length && <p className="col-span-full text-center text-sm text-slate-500">Không có cầu thủ nào phù hợp.</p>}
+            {!players.length && <p className="col-span-full text-center text-sm text-slate-500">No matching players found.</p>}
           </div>
 
           {!isSearching && playersState?.data?.length > 0 && (
             <div className="flex items-center justify-center gap-2 text-sm text-slate-700">
               <Button variant="outline" disabled={page <= 1} onClick={() => handlePagination(-1)}>
-                Trước
+                Previous
               </Button>
               <span>
-                Trang {page} • {playersState?.pagination?.total || '∞'} cầu thủ
+                Page {page} • {playersState?.pagination?.total || '∞'} players
               </span>
               <Button variant="outline" disabled={players.length < limit} onClick={() => handlePagination(1)}>
-                Sau
+                Next
               </Button>
             </div>
           )}

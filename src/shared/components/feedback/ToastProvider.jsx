@@ -72,7 +72,7 @@ export function ToastProvider({ children }) {
                         size="icon"
                         onClick={() => removeToast(toast.id)}
                         className="text-current"
-                        aria-label="Đóng thông báo"
+                        aria-label="Close notification"
                       >
                         ×
                       </Button>
@@ -91,7 +91,7 @@ export function ToastProvider({ children }) {
 export function useToastContext() {
   const ctx = useContext(ToastContext)
   if (!ctx) {
-    throw new Error('useToast phải được dùng trong ToastProvider')
+    throw new Error('useToast must be used within a ToastProvider')
   }
   return ctx
 }

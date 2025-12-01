@@ -16,7 +16,7 @@ export default function TeamSidebar({ team, venue, playersState }) {
   if (!team) {
     return (
       <Card className="p-6 text-sm text-slate-500">
-        Chọn một đội bóng để xem thêm chi tiết.
+        Select a team to view details.
       </Card>
     )
   }
@@ -31,27 +31,27 @@ export default function TeamSidebar({ team, venue, playersState }) {
             {team.country} • Founded {team.founded || 'N/A'}
           </p>
           <Link to={`/teams/${team.id}`} className="text-xs font-semibold uppercase tracking-widest text-primary-600">
-            Xem trang đội
+            View team page
           </Link>
         </div>
       </div>
 
-      <Section title="SVĐ">
+      <Section title="Stadium">
         {venue ? (
           <CardContent className="rounded-xl bg-slate-50 text-sm text-slate-600">
             <p className="font-semibold text-slate-800">{venue.name}</p>
             <p>{venue.city}</p>
             <p className="text-xs">{venue.address}</p>
-            <p className="text-xs">Sức chứa: {venue.capacity || 'N/A'}</p>
+            <p className="text-xs">Capacity: {venue.capacity || 'N/A'}</p>
           </CardContent>
         ) : (
-          <p className="text-sm text-slate-500">Không có thông tin sân vận động.</p>
+          <p className="text-sm text-slate-500">No stadium information available.</p>
         )}
       </Section>
 
-      <Section title="Cầu thủ">
+      <Section title="Players">
         {playersState.error ? (
-          <p className="text-sm text-red-500">{playersState.error.message || 'Không thể tải danh sách cầu thủ'}</p>
+          <p className="text-sm text-red-500">{playersState.error.message || 'Unable to load player list'}</p>
         ) : null}
         {playersState.loading ? (
           <div className="space-y-2">
@@ -60,7 +60,7 @@ export default function TeamSidebar({ team, venue, playersState }) {
             ))}
           </div>
         ) : !playersState.data?.length ? (
-          <p className="text-sm text-slate-500">Chọn giải đấu và mùa giải để xem đội hình.</p>
+          <p className="text-sm text-slate-500">Select a league and season to view the squad.</p>
         ) : (
           <ul className="max-h-60 space-y-2 overflow-auto text-sm text-slate-700">
             {playersState.data.map((player) => (

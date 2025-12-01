@@ -60,7 +60,7 @@ export default function Modal({
                   <Button
                     variant="ghost"
                     size="icon"
-                    aria-label="Đóng"
+                    aria-label="Close"
                     onClick={onClose}
                     className="text-slate-400 hover:text-slate-600"
                   >

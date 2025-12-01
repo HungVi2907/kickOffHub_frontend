@@ -1,4 +1,4 @@
-export default function getApiErrorMessage(error, fallback = 'Đã có lỗi xảy ra') {
+export default function getApiErrorMessage(error, fallback = 'An error occurred') {
   if (!error) {
     return fallback
   }

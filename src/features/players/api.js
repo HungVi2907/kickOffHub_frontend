@@ -8,6 +8,7 @@ export const playerApi = {
   leagueTeamSeason: (params) => api.get(endpoints.players.leagueTeamSeason, { params }),
   popular: (params) => api.get(endpoints.players.popular, { params }),
   stats: (params) => api.get(endpoints.players.stats, { params }),
+  count: () => api.get(endpoints.players.count),
 }
 
 export default playerApi

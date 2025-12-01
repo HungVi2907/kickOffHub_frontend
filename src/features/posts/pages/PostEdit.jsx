@@ -1,10 +1,12 @@
-import { useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import Button from '@/shared/components/ui/Button.jsx'
 import Input from '@/shared/components/ui/Input.jsx'
 import Card from '@/shared/components/ui/Card.jsx'
 import { ROUTES } from '@/app/paths.js'
 import postApi from '@/features/posts/api.js'
+import { usePostDetail } from '@/features/posts/hooks.js'
+import { useAuth } from '@/features/auth/hooks.js'
 import getApiErrorMessage from '@/shared/utils/getApiErrorMessage.js'
 import { uploadImage } from "../../../api/upload";
 
@@ -46,23 +48,40 @@ const parseTags = (raw) => {
 	return [...unique.values()]
 }
 
+/**
+ * Convert tags array to comma-separated string
+ * @param {Array} tags - Array of tag objects with name property
+ * @returns {string} - Comma-separated tag names
+ */
+const tagsToString = (tags) => {
+	if (!Array.isArray(tags)) return ''
+	return tags.map(tag => tag.name || tag).join(', ')
+}
+
 // =============================================================================
 // MAIN COMPONENT
 // =============================================================================
 
-export default function PostCreatePage() {
+export default function PostEditPage() {
+	const { postId } = useParams()
 	const navigate = useNavigate()
+	const { user } = useAuth()
+	
+	// Fetch existing post data
+	const { data: existingPost, loading: loadingPost, error: loadError } = usePostDetail(postId)
 	
 	// -----------------------------------------------------------------------------
 	// Form State
 	// -----------------------------------------------------------------------------
 	const [form, setForm] = useState({ title: '', content: '', tags: '', status: 'public' })
+	const [initialized, setInitialized] = useState(false)
 	
 	// -----------------------------------------------------------------------------
 	// Image Upload State
 	// -----------------------------------------------------------------------------
 	const [imageFile, setImageFile] = useState(null) // The selected File object
 	const [imagePreview, setImagePreview] = useState('') // Object URL for preview
+	const [existingImageUrl, setExistingImageUrl] = useState('') // Existing image from the post
 	const [uploadingImage, setUploadingImage] = useState(false) // Upload in progress flag
 	
 	// -----------------------------------------------------------------------------
@@ -74,6 +93,36 @@ export default function PostCreatePage() {
 
 	// Memoized tag preview array
 	const tagPreview = useMemo(() => parseTags(form.tags), [form.tags])
+
+	// Check if current user is the post owner
+	const isOwner = useMemo(() => {
+		if (!user?.id || !existingPost) return false
+		return user.id === existingPost.user_id || user.id === existingPost.author?.id
+	}, [user?.id, existingPost])
+
+	// Initialize form with existing post data
+	useEffect(() => {
+		if (existingPost && !initialized) {
+			setForm({
+				title: existingPost.title || '',
+				content: existingPost.content || '',
+				tags: tagsToString(existingPost.tags),
+				status: existingPost.status || 'public',
+			})
+			const existingImage = existingPost.imageUrl || existingPost.image_url
+			if (existingImage) {
+				setExistingImageUrl(existingImage)
+			}
+			setInitialized(true)
+		}
+	}, [existingPost, initialized])
+
+	// Redirect if not owner
+	useEffect(() => {
+		if (initialized && !isOwner) {
+			navigate(`/forum/${postId}`, { replace: true })
+		}
+	}, [initialized, isOwner, postId, navigate])
 
 	// -----------------------------------------------------------------------------
 	// Event Handlers
@@ -95,18 +144,18 @@ export default function PostCreatePage() {
 		const file = event.target.files?.[0]
 		if (!file) return
 
-				// Validate file type
-				const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-				if (!allowedTypes.includes(file.type)) {
-					setError('Please select a valid image file (JPEG, PNG, GIF, WebP)');
-					return;
-				}
-				// Validate file size (5MB)
-				const maxFileSize = 5 * 1024 * 1024;
-				if (file.size > maxFileSize) {
-					setError('Maximum image size is 5MB');
-					return;
-				}
+		// Validate file type
+		const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+		if (!allowedTypes.includes(file.type)) {
+			setError('Please select a valid image file (JPEG, PNG, GIF, WebP)');
+			return;
+		}
+		// Validate file size (5MB)
+		const maxFileSize = 5 * 1024 * 1024;
+		if (file.size > maxFileSize) {
+			setError('Maximum image size is 5MB');
+			return;
+		}
 
 		// Clear any previous errors
 		setError('')
@@ -116,13 +165,14 @@ export default function PostCreatePage() {
 			URL.revokeObjectURL(imagePreview)
 		}
 
-		// Store file and create preview
+		// Store file and create preview (this replaces existing image)
 		setImageFile(file)
 		setImagePreview(URL.createObjectURL(file))
+		setExistingImageUrl('') // Clear existing image when selecting new one
 	}
 
 	/**
-	 * Remove the selected image
+	 * Remove the selected/existing image
 	 */
 	const handleRemoveImage = () => {
 		if (imagePreview) {
@@ -130,14 +180,15 @@ export default function PostCreatePage() {
 		}
 		setImageFile(null)
 		setImagePreview('')
+		setExistingImageUrl('')
 	}
 
 	/**
 	 * Handle form submission
 	 * 1. Validate required fields
-	 * 2. Upload image to Cloudinary (if selected)
-	 * 3. Create post with imageUrl
-	 * 4. Navigate to the new post
+	 * 2. Upload image to Cloudinary (if new image selected)
+	 * 3. Update post with imageUrl
+	 * 4. Navigate to the post
 	 */
 	const handleSubmit = async (event) => {
 		event.preventDefault()
@@ -155,9 +206,9 @@ export default function PostCreatePage() {
 		setSubmitting(true)
 		try {
 			// ---------------------------------------------------------------------
-			// Step 1: Upload image via backend API (if image exists)
+			// Step 1: Upload new image via backend API (if new image selected)
 			// ---------------------------------------------------------------------
-			let imageUrl = null;
+			let imageUrl = existingImageUrl || null;
 			if (imageFile) {
 				setUploadingImage(true);
 				try {
@@ -175,7 +226,7 @@ export default function PostCreatePage() {
 			}
 
 			// ---------------------------------------------------------------------
-			// Step 2: Build payload and create post
+			// Step 2: Build payload and update post
 			// ---------------------------------------------------------------------
 			const payload = {
 				title: trimmedTitle,
@@ -188,32 +239,51 @@ export default function PostCreatePage() {
 				payload.tags = tagPreview
 			}
 
-			// Add image URL if uploaded successfully
-			if (imageUrl) {
-				payload.imageUrl = imageUrl
-			}
+			// Add image URL (new upload, existing, or null if removed)
+			payload.imageUrl = imageUrl
 
 			// ---------------------------------------------------------------------
-			// Step 3: Call API to create the post
+			// Step 3: Call API to update the post
 			// ---------------------------------------------------------------------
-			const response = await postApi.create(payload)
-			const created = response?.data ?? response
-
-			if (!created?.id) {
-				throw new Error('Invalid response, missing post ID')
-			}
+			await postApi.update(postId, payload)
 
 			// ---------------------------------------------------------------------
-			// Step 4: Success! Navigate to the new post
+			// Step 4: Success! Navigate to the post
 			// ---------------------------------------------------------------------
-			setSuccess('Post published successfully! Redirecting to your post...')
-			setTimeout(() => navigate(`${ROUTES.forum}/${created.id}`), 800)
+			setSuccess('Post updated successfully! Redirecting...')
+			setTimeout(() => navigate(`${ROUTES.forum}/${postId}`), 800)
 
 		} catch (err) {
-			setError(getApiErrorMessage(err, 'Unable to publish post'))
+			setError(getApiErrorMessage(err, 'Unable to update post'))
 		} finally {
 			setSubmitting(false)
 		}
+	}
+
+	// Loading state
+	if (loadingPost) {
+		return (
+			<Card className="border-slate-200 bg-white/80 p-6 shadow-sm">
+				Loading post...
+			</Card>
+		)
+	}
+
+	// Error loading post
+	if (loadError) {
+		return (
+			<Card className="border-red-200 bg-red-50 p-6 text-red-600">
+				<p className="font-semibold">{getApiErrorMessage(loadError)}</p>
+				<Link to={ROUTES.forum} className="mt-4 inline-block text-sm underline">
+					Back to forum
+				</Link>
+			</Card>
+		)
+	}
+
+	// Not owner - show nothing while redirecting
+	if (initialized && !isOwner) {
+		return null
 	}
 
 	return (
@@ -221,15 +291,15 @@ export default function PostCreatePage() {
 			<Card className="border-slate-200 bg-white/90 p-6 shadow-sm">
 				<div className="flex flex-wrap items-start justify-between gap-4">
 					<div>
-						<p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary-500">Share knowledge</p>
-						<h1 className="mt-2 text-3xl font-bold text-slate-900">Write a new post</h1>
-						<p className="mt-1 text-sm text-slate-500">Share your perspective on tactics, players, or your favorite leagues.</p>
+						<p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary-500">Edit post</p>
+						<h1 className="mt-2 text-3xl font-bold text-slate-900">Update your post</h1>
+						<p className="mt-1 text-sm text-slate-500">Make changes to your post content, tags, or image.</p>
 					</div>
 					<Link
-						to={ROUTES.forum}
+						to={`/forum/${postId}`}
 						className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-primary-400 hover:text-primary-600"
 					>
-						← Back to forum
+						← Back to post
 					</Link>
 				</div>
 			</Card>
@@ -280,7 +350,7 @@ export default function PostCreatePage() {
 									<svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
 									</svg>
-									{imageFile ? 'Change image' : 'Select image'}
+									{imageFile ? 'Change image' : existingImageUrl ? 'Replace image' : 'Select image'}
 								</span>
 								<input
 									type="file"
@@ -298,11 +368,11 @@ export default function PostCreatePage() {
 							)}
 						</div>
 
-						{/* Image Preview */}
-						{imagePreview && (
+						{/* Image Preview (new upload or existing) */}
+						{(imagePreview || existingImageUrl) && (
 							<div className="relative inline-block">
 								<img
-									src={imagePreview}
+									src={imagePreview || existingImageUrl}
 									alt="Preview"
 									className="max-h-48 rounded-xl border border-slate-200 object-cover shadow-sm"
 								/>
@@ -380,18 +450,18 @@ export default function PostCreatePage() {
 						{uploadingImage 
 							? 'Uploading image...' 
 							: submitting 
-								? 'Publishing post...' 
-								: 'Publish post'}
+								? 'Updating post...' 
+								: 'Update post'}
 					</Button>
 				</Card>
 
 				<Card className="space-y-4 border-slate-200 bg-white/70 p-6 shadow-sm">
 					<div>
-						<p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Quick guide</p>
+						<p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Editing tips</p>
 						<ul className="mt-4 space-y-3 text-sm text-slate-600">
 							<li>• Minimum 50 characters of content, with clear formatting preferred.</li>
 							<li>• Tags help readers filter by topic — use up to 10 tags.</li>
-							<li>• You can save as draft and finish later by selecting "Draft" status.</li>
+							<li>• You can save as draft to hide the post temporarily.</li>
 						</ul>
 					</div>
 					<hr className="border-dashed border-slate-200" />

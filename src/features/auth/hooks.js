@@ -39,14 +39,14 @@ export function useAuth() {
       // or { success, message, data: { accessToken, refreshToken, user } }
       const payload = response?.data ?? response
       
-      // Backend có thể trả về "token" hoặc "accessToken"
+      // Backend may return "token" or "accessToken"
       const tokenValue = payload?.token || payload?.accessToken || payload?.tokens?.accessToken
       
       if (!tokenValue) {
-        throw new Error('Phản hồi đăng nhập không hợp lệ')
+        throw new Error('Invalid login response')
       }
       
-      // Lưu token (dùng accessToken làm key trong store)
+      // Store token (using accessToken as key in store)
       login({
         accessToken: tokenValue,
         refreshToken: payload.refreshToken || payload.tokens?.refreshToken || null,
@@ -63,7 +63,7 @@ export function useAuth() {
         }
       }
       
-      toast.success('Đăng nhập thành công')
+      toast.success('Login successful')
       return payload
     },
     [login, setUser, toast],
@@ -72,7 +72,7 @@ export function useAuth() {
   const handleRegister = useCallback(
     async (payload) => {
       const response = await authApi.register(payload)
-      toast.success('Tạo tài khoản thành công')
+      toast.success('Account created successfully')
       return response?.data ?? response
     },
     [toast],
@@ -80,7 +80,7 @@ export function useAuth() {
 
   const handleLogout = useCallback(() => {
     logout()
-    toast.info('Bạn đã đăng xuất')
+    toast.info('You have been logged out')
   }, [logout, toast])
 
   const refreshSession = useCallback(async () => {

@@ -124,7 +124,7 @@ http.interceptors.response.use(
 
 function formatApiError(error) {
   const response = error?.response?.data
-  const defaultMessage = 'Yêu cầu thất bại. Vui lòng thử lại.'
+  const defaultMessage = 'Request failed. Please try again.'
   const message = response?.message || response?.error?.message || error?.message || defaultMessage
   const normalizedError = new Error(message)
   normalizedError.success = false

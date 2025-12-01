@@ -67,34 +67,75 @@ export default function HomePage() {
 		totalItems: null,
 	})
 
+	// State for live database counts
+	const [countryCount, setCountryCount] = useState(0)
+	const [playerCount, setPlayerCount] = useState(0)
+
+	// Fetch countries count from database
 	useEffect(() => {
 		let isActive = true
-		setCountriesState((prev) => ({ ...prev, loading: true, error: '' }))
 		countryApi
-			.list({ page: countryPage, limit: FEATURED_COUNT })
+			.count()
 			.then((response) => {
 				if (!isActive) return
-				const items = toArray(response)
-				const pagination = extractPagination(response)
-				setCountriesState({
-					items,
-					loading: false,
-					error: '',
-					totalPages: pagination.totalPages ?? 1,
-					totalItems: pagination.totalItems ?? items.length,
-				})
-				if (pagination.page && pagination.page !== countryPage) {
-					setCountryPage(pagination.page)
-				}
+				const total = response?.data?.total ?? response?.total ?? 0
+				setCountryCount(total)
 			})
-			.catch((error) => {
-				if (!isActive) return
-				setCountriesState((prev) => ({ ...prev, loading: false, error: getApiErrorMessage(error) }))
+			.catch(() => {
+				// Silently handle errors, keep count at 0
 			})
 		return () => {
 			isActive = false
 		}
-	}, [countryPage])
+	}, [])
+
+	// Fetch players count from database
+	useEffect(() => {
+		let isActive = true
+		playerApi
+			.count()
+			.then((response) => {
+				if (!isActive) return
+				const total = response?.data?.total ?? response?.total ?? 0
+				setPlayerCount(total)
+			})
+			.catch(() => {
+				// Silently handle errors, keep count at 0
+			})
+		return () => {
+			isActive = false
+		}
+	}, [])
+
+	// TEMPORARILY DISABLED - Explore Countries feature
+	// useEffect(() => {
+	// 	let isActive = true
+	// 	setCountriesState((prev) => ({ ...prev, loading: true, error: '' }))
+	// 	countryApi
+	// 		.list({ page: countryPage, limit: FEATURED_COUNT })
+	// 		.then((response) => {
+	// 			if (!isActive) return
+	// 			const items = toArray(response)
+	// 			const pagination = extractPagination(response)
+	// 			setCountriesState({
+	// 				items,
+	// 				loading: false,
+	// 				error: '',
+	// 				totalPages: pagination.totalPages ?? 1,
+	// 				totalItems: pagination.totalItems ?? items.length,
+	// 			})
+	// 			if (pagination.page && pagination.page !== countryPage) {
+	// 				setCountryPage(pagination.page)
+	// 			}
+	// 		})
+	// 		.catch((error) => {
+	// 			if (!isActive) return
+	// 			setCountriesState((prev) => ({ ...prev, loading: false, error: getApiErrorMessage(error) }))
+	// 		})
+	// 	return () => {
+	// 		isActive = false
+	// 	}
+	// }, [countryPage])
 
 	useEffect(() => {
 		let isActive = true
@@ -114,37 +155,38 @@ export default function HomePage() {
 		}
 	}, [])
 
-	useEffect(() => {
-		let isActive = true
-		setPlayerState((prev) => ({ ...prev, loading: true, error: '' }))
-		playerApi
-			.popular({ page: playerPage, limit: FEATURED_COUNT })
-			.then((response) => {
-				if (!isActive) return
-				const items = toArray(response)
-				const pagination = extractPagination(response)
-				setPlayerState({
-					items,
-					loading: false,
-					error: '',
-					totalPages: pagination.totalPages ?? 1,
-					totalItems: pagination.totalItems ?? items.length,
-				})
-				if (pagination.page && pagination.page !== playerPage) {
-					setPlayerPage(pagination.page)
-				}
-			})
-			.catch((error) => {
-				if (!isActive) return
-				setPlayerState((prev) => ({ ...prev, loading: false, error: getApiErrorMessage(error) }))
-			})
-		return () => {
-			isActive = false
-		}
-	}, [playerPage, playerRefreshKey])
+	// TEMPORARILY DISABLED - Browse Player feature
+	// useEffect(() => {
+	// 	let isActive = true
+	// 	setPlayerState((prev) => ({ ...prev, loading: true, error: '' }))
+	// 	playerApi
+	// 		.popular({ page: playerPage, limit: FEATURED_COUNT })
+	// 		.then((response) => {
+	// 			if (!isActive) return
+	// 			const items = toArray(response)
+	// 			const pagination = extractPagination(response)
+	// 			setPlayerState({
+	// 				items,
+	// 				loading: false,
+	// 				error: '',
+	// 				totalPages: pagination.totalPages ?? 1,
+	// 				totalItems: pagination.totalItems ?? items.length,
+	// 			})
+	// 			if (pagination.page && pagination.page !== playerPage) {
+	// 				setPlayerPage(pagination.page)
+	// 			}
+	// 		})
+	// 		.catch((error) => {
+	// 			if (!isActive) return
+	// 			setPlayerState((prev) => ({ ...prev, loading: false, error: getApiErrorMessage(error) }))
+	// 		})
+	// 	return () => {
+	// 		isActive = false
+	// 	}
+	// }, [playerPage, playerRefreshKey])
 
-	const countryCountLabel = useMemo(() => formatCount(countriesState.totalItems), [countriesState.totalItems])
-	const playerCountLabel = useMemo(() => formatCount(playerState.totalItems), [playerState.totalItems])
+	const countryCountLabel = useMemo(() => formatCount(countryCount), [countryCount])
+	const playerCountLabel = useMemo(() => formatCount(playerCount), [playerCount])
 	const leagueCountLabel = useMemo(() => formatCount(leagueState.items.length), [leagueState.items.length])
 
 	const canPrevCountries = countryPage > 1
@@ -174,9 +216,9 @@ export default function HomePage() {
 					</div>
 					<div className="grid gap-4 sm:grid-cols-3">
 						{[
-							{ label: 'Countries synced', value: countryCountLabel },
+							{ label: 'Countries Synced', value: countryCountLabel },
 							{ label: 'Leagues tracked', value: leagueCountLabel },
-							{ label: 'Popular players', value: playerCountLabel },
+							{ label: 'Player Synced', value: playerCountLabel },
 						].map((stat) => (
 							<Card key={stat.label} className="border-transparent bg-white/80 shadow-none">
 								<CardContent className="space-y-1">
@@ -186,6 +228,7 @@ export default function HomePage() {
 							</Card>
 						))}
 					</div>
+					{/* TEMPORARILY DISABLED - Browse Player, Explore Countries, Refresh Spotlight buttons
 					<div className="flex flex-wrap gap-3">
 						<Button type="button" onClick={() => setPlayerPage(1)} className="rounded-2xl px-6">
 							Browse players
@@ -197,6 +240,7 @@ export default function HomePage() {
 							Refresh spotlight
 						</Button>
 					</div>
+					*/}
 				</CardContent>
 			</Card>
 
@@ -266,6 +310,7 @@ export default function HomePage() {
 				</div>
 			</section>
 
+			{/* TEMPORARILY DISABLED - Explore Countries section
 			<section className="space-y-4">
 				<div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
 					<div>
@@ -303,26 +348,32 @@ export default function HomePage() {
 						)}
 
 					{countriesState.items.map((country) => (
-						<Card key={country.id || country.code || country.name} className="border-slate-200 bg-white/80 p-5">
-							<div className="flex items-center gap-4">
-								{country.flag ? (
-									<img
-										src={withFallback(country.flag)}
-										alt={country.name}
-										className="h-12 w-20 rounded-xl object-cover"
-									/>
-								) : (
-									<div className="flex h-12 w-20 items-center justify-center rounded-xl border border-dashed border-slate-200 text-[10px] uppercase tracking-[0.4em] text-slate-400">
-										N/A
+						<Link
+							to={`${ROUTES.countries}/${country.id}`}
+							key={country.id || country.code || country.name}
+							className="group block"
+						>
+							<Card className="border-slate-200 bg-white/80 p-5 transition hover:-translate-y-1 hover:border-primary-300 hover:shadow-lg">
+								<div className="flex items-center gap-4">
+									{country.flag ? (
+										<img
+											src={withFallback(country.flag)}
+											alt={country.name}
+											className="h-12 w-20 rounded-xl object-cover"
+										/>
+									) : (
+										<div className="flex h-12 w-20 items-center justify-center rounded-xl border border-dashed border-slate-200 text-[10px] uppercase tracking-[0.4em] text-slate-400">
+											N/A
+										</div>
+									)}
+									<div className="flex-1">
+										<p className="text-xs uppercase tracking-[0.3em] text-slate-400">Country</p>
+										<h3 className="text-lg font-semibold text-slate-900 transition-colors group-hover:text-primary-600">{country.name || country.country || 'Unnamed country'}</h3>
+										<p className="text-sm text-slate-500">Code: {(country.code || '').toUpperCase() || 'N/A'}</p>
 									</div>
-								)}
-								<div>
-									<p className="text-xs uppercase tracking-[0.3em] text-slate-400">Country</p>
-									<h3 className="text-lg font-semibold text-slate-900">{country.name || country.country || 'Unnamed country'}</h3>
-									<p className="text-sm text-slate-500">Code: {(country.code || '').toUpperCase() || 'N/A'}</p>
 								</div>
-							</div>
-						</Card>
+							</Card>
+						</Link>
 					))}
 				</div>
 
@@ -354,7 +405,9 @@ export default function HomePage() {
 					</div>
 				)}
 			</section>
+			*/}
 
+			{/* TEMPORARILY DISABLED - Browse Player (Popular players) section
 			<section className="space-y-4">
 				<div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
 					<div>
@@ -437,6 +490,7 @@ export default function HomePage() {
 					</div>
 				)}
 			</section>
+			*/}
 		</MotionSection>
 	)
 }

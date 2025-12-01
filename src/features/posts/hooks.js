@@ -28,7 +28,12 @@ export function usePosts(params = {}) {
       // Uses postApi.list which calls: api.get('/posts', { params })
       // axios baseURL ensures correct backend URL is used
       const response = await postApi.list(paramsKey ? JSON.parse(paramsKey) : {})
+      
+      // Extract nested data from API response
+      // API returns: { success, message, data: { total, page, pageSize, data: [...posts] } }
       const payload = response?.data ?? response ?? {}
+      
+      // Extract posts array from the nested structure
       const data = Array.isArray(payload?.data)
         ? payload.data
         : Array.isArray(payload?.data?.data)
@@ -36,16 +41,24 @@ export function usePosts(params = {}) {
         : Array.isArray(payload)
         ? payload
         : []
-      const pagination =
-        payload?.pagination ||
-        payload?.meta ||
-        response?.meta ||
-        payload?.data?.pagination ||
-        null
+      
+      // Extract pagination info
+      // Backend returns: { total, page, pageSize, data: [...] }
+      const pagination = {
+        total: payload?.total ?? payload?.data?.total ?? 0,
+        page: payload?.page ?? payload?.data?.page ?? 1,
+        pageSize: payload?.pageSize ?? payload?.data?.pageSize ?? params.limit ?? 10,
+        totalPages: payload?.total 
+          ? Math.ceil(payload.total / (payload?.pageSize ?? 10))
+          : payload?.data?.total
+            ? Math.ceil(payload.data.total / (payload?.data?.pageSize ?? 10))
+            : 1
+      }
+      
       setState({ data: data ?? [], pagination, loading: false, error: null })
     } catch (error) {
       setState({ data: [], pagination: null, loading: false, error })
-      toast.error(error.message || 'Không thể tải danh sách bài viết')
+      toast.error(error.message || 'Unable to load posts')
     }
   }, [paramsKey, toast])
 
@@ -73,7 +86,7 @@ export function usePostDetail(postId) {
       setState({ data: response?.data ?? response, loading: false, error: null })
     } catch (error) {
       setState({ data: null, loading: false, error })
-      toast.error(error.message || 'Không thể tải bài viết')
+      toast.error(error.message || 'Unable to load post')
     }
   }, [postId, toast])
 
@@ -105,7 +118,7 @@ export function usePostActions(postId) {
     if (!postId) return null
     // postApi.like calls: api.post(`/posts/${postId}/likes`)
     const response = await postApi.like(postId)
-    toast.success('Bạn đã thích bài viết')
+    toast.success('You liked this post')
     return response?.data ?? response
   }, [postId, toast])
 
@@ -117,7 +130,7 @@ export function usePostActions(postId) {
     if (!postId) return null
     // postApi.unlike calls: api.delete(`/posts/${postId}/likes`)
     const response = await postApi.unlike(postId)
-    toast.info('Đã bỏ thích bài viết')
+    toast.info('Removed like from post')
     return response?.data ?? response
   }, [postId, toast])
 
@@ -135,16 +148,16 @@ export function usePostActions(postId) {
       // Validate comment content before API call
       const content = payload?.content?.trim()
       if (!content || content.length < 5) {
-        throw new Error('Bình luận phải có ít nhất 5 ký tự')
+        throw new Error('Comment must have at least 5 characters')
       }
       if (content.length > 500) {
-        throw new Error('Bình luận không được vượt quá 500 ký tự')
+        throw new Error('Comment cannot exceed 500 characters')
       }
       
       // postApi.addComment calls: api.post(`/posts/${postId}/comments`, { content })
       // Backend expects: { content: string }
       const response = await postApi.addComment(postId, { content })
-      toast.success('Đã đăng bình luận')
+      toast.success('Comment posted')
       return response?.data ?? response
     },
     [postId, toast],
@@ -157,15 +170,25 @@ export function usePostActions(postId) {
    * 
    * @param {Object} payload - Should be { reason: "..." }
    */
+  // TEMPORARILY DISABLED - Report feature is inactive
+  // Original implementation preserved below:
+  // const report = useCallback(
+  //   async (payload) => {
+  //     if (!postId) return null
+  //     // postApi.report calls: api.post(`/posts/${postId}/reports`, payload)
+  //     const response = await postApi.report(postId, payload)
+  //     toast.info('Report submitted')
+  //     return response?.data ?? response
+  //   },
+  //   [postId, toast],
+  // )
   const report = useCallback(
-    async (payload) => {
-      if (!postId) return null
-      // postApi.report calls: api.post(`/posts/${postId}/reports`, payload)
-      const response = await postApi.report(postId, payload)
-      toast.info('Đã gửi báo cáo')
-      return response?.data ?? response
+    async () => {
+      // Feature temporarily disabled - no API call made
+      toast.info('The report feature is currently disabled.')
+      return null
     },
-    [postId, toast],
+    [toast],
   )
 
   return { like, unlike, comment, report }

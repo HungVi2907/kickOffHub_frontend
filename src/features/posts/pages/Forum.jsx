@@ -12,9 +12,9 @@ import getApiErrorMessage from '@/shared/utils/getApiErrorMessage.js'
 
 const MotionSection = motion.section
 const statusOptions = [
-	{ value: 'all', label: 'Tất cả' },
-	{ value: 'public', label: 'Công khai' },
-	{ value: 'draft', label: 'Lưu nháp' },
+	{ value: 'all', label: 'All' },
+	{ value: 'public', label: 'Public' },
+	{ value: 'draft', label: 'Draft' },
 ]
 
 export default function ForumPage() {
@@ -43,8 +43,8 @@ export default function ForumPage() {
 	const posts = postsState.data ?? []
 	const pagination = postsState.pagination ?? {}
 	const currentPage = pagination.page ?? page
-	const pageSize = pagination.limit ?? pagination.perPage ?? limit
-	const totalItems = pagination.total ?? pagination.totalItems ?? pagination.count ?? posts.length
+	const pageSize = pagination.pageSize ?? limit
+	const totalItems = pagination.total ?? posts.length
 	const totalPages = pagination.totalPages ?? (pageSize ? Math.max(1, Math.ceil(totalItems / pageSize)) : 1)
 
 	const handlePageChange = (direction) => {
@@ -62,25 +62,25 @@ export default function ForumPage() {
 			<Card className="space-y-4 border-slate-200 bg-white/80 p-6 shadow-sm">
 				<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 					<div>
-						<p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary-500">Diễn đàn</p>
-						<h1 className="text-3xl font-bold text-slate-900">Trao đổi chiến thuật & tin tức</h1>
-						<p className="text-sm text-slate-600">Chia sẻ bài viết, bình luận và tương tác với cộng đồng KickOff Hub.</p>
+						<p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary-500">Forum</p>
+						<h1 className="text-3xl font-bold text-slate-900">Tactics & News Discussion</h1>
+						<p className="text-sm text-slate-600">Share posts, comment, and interact with the KickOff Hub community.</p>
 					</div>
 					<div className="flex flex-col gap-3 sm:flex-row">
 						<Link
 							to={ROUTES.forumNew}
 							className="inline-flex items-center justify-center rounded-full bg-primary-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-primary-500"
 						>
-							+ Viết bài mới
+							+ Write new post
 						</Link>
 						<Button variant="outline" onClick={handleRefresh} className="rounded-full">
-							Làm mới
+							Refresh
 						</Button>
 					</div>
 				</div>
 				<div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
 					<Input
-						label="Từ khóa"
+						label="Keyword"
 						value={search}
 						onChange={(event) => setFilters({ search: event.target.value, page: 1 })}
 						placeholder="Tactics, transfer..."
@@ -92,7 +92,7 @@ export default function ForumPage() {
 						placeholder="premier league"
 					/>
 					<label className="text-sm font-medium text-slate-600">
-						Trạng thái
+						Status
 						<select
 							value={status}
 							onChange={(event) => setFilters({ status: event.target.value, page: 1 })}
@@ -106,24 +106,23 @@ export default function ForumPage() {
 						</select>
 					</label>
 					<label className="text-sm font-medium text-slate-600">
-						Sắp xếp
+						Sort by
 						<select
 							value={sort}
 							onChange={(event) => setFilters({ sort: event.target.value, page: 1 })}
 							className="mt-1 w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-700 shadow-sm focus:border-primary-500 focus:outline-none"
 						>
-							<option value="latest">Mới nhất</option>
-							<option value="oldest">Cũ nhất</option>
-							<option value="popular">Phổ biến</option>
+							<option value="newest">Newest</option>
+							<option value="likes">Most Liked</option>
 						</select>
 					</label>
 				</div>
 				<div className="flex flex-wrap gap-3 text-xs text-slate-500">
 					<span>
-						{totalItems || 0} bài viết • Trang {currentPage}/{totalPages}
+						{totalItems || 0} posts • Page {currentPage}/{totalPages}
 					</span>
 					<Button variant="ghost" size="sm" onClick={() => reset()}>
-						Xóa bộ lọc
+						Clear filters
 					</Button>
 				</div>
 			</Card>
@@ -138,14 +137,14 @@ export default function ForumPage() {
 
 			{!postsState.loading && postsState.error && (
 				<Card className="border-red-200 bg-red-50 text-sm text-red-600">
-					<p className="font-semibold">Không thể tải bài viết</p>
+					<p className="font-semibold">Unable to load posts</p>
 					<p className="mt-1">{getApiErrorMessage(postsState.error)}</p>
 				</Card>
 			)}
 
 			{!postsState.loading && !postsState.error && posts.length === 0 && (
 				<Card className="border-dashed border-slate-300 bg-white/60 text-center text-sm text-slate-500">
-					Chưa có bài viết nào phù hợp. Hãy là người đầu tiên chia sẻ!
+					No matching posts found. Be the first to share!
 				</Card>
 			)}
 
@@ -173,7 +172,7 @@ export default function ForumPage() {
 									<div className="space-y-3">
 										<div className="flex items-center justify-between text-xs text-slate-400">
 											<span>#{post.id}</span>
-											<span>{post.likeCount ?? 0} lượt thích</span>
+											<span>{post.likeCount ?? 0} likes</span>
 										</div>
 										<h3 className="text-xl font-semibold text-slate-900 transition group-hover:text-primary-600 line-clamp-2">
 											{post.title}
@@ -181,8 +180,8 @@ export default function ForumPage() {
 										<p className="text-sm text-slate-600 line-clamp-3">{post.content}</p>
 									</div>
 									<div className="mt-3 flex items-center justify-between text-xs text-slate-500">
-										<span>{post.author?.name || 'Ẩn danh'}</span>
-										<time>{post.created_at ? new Date(post.created_at).toLocaleString() : 'Mới'}</time>
+										<span>{post.author?.name || post.author?.username || 'Anonymous'}</span>
+										<time>{post.created_at ? new Date(post.created_at).toLocaleString() : 'New'}</time>
 									</div>
 									{Array.isArray(post.tags) && post.tags.length > 0 && (
 										<div className="mt-3 flex flex-wrap gap-2">
@@ -203,14 +202,14 @@ export default function ForumPage() {
 			{totalPages > 1 && (
 				<div className="flex flex-wrap items-center justify-center gap-3 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm shadow-sm">
 					<span className="text-slate-600">
-						Trang {currentPage} / {totalPages}
+						Page {currentPage} / {totalPages}
 					</span>
 					<div className="flex items-center gap-2">
 						<Button variant="outline" size="sm" onClick={() => handlePageChange(-1)} disabled={currentPage <= 1 || postsState.loading}>
-							Trước
+							Previous
 						</Button>
 						<Button variant="outline" size="sm" onClick={() => handlePageChange(1)} disabled={currentPage >= totalPages || postsState.loading}>
-							Sau
+							Next
 						</Button>
 					</div>
 				</div>

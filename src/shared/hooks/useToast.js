@@ -10,25 +10,25 @@ export function useToast() {
   )
 
   toast.success = useCallback(
-    (description, title = 'Thành công') =>
+    (description, title = 'Success') =>
       addToast({ title, description, variant: 'success' }),
     [addToast],
   )
 
   toast.error = useCallback(
-    (description, title = 'Đã có lỗi xảy ra') =>
+    (description, title = 'An error occurred') =>
       addToast({ title, description, variant: 'error' }),
     [addToast],
   )
 
   toast.warning = useCallback(
-    (description, title = 'Chú ý') =>
+    (description, title = 'Warning') =>
       addToast({ title, description, variant: 'warning' }),
     [addToast],
   )
 
   toast.info = useCallback(
-    (description, title = 'Thông báo') =>
+    (description, title = 'Notice') =>
       addToast({ title, description, variant: 'info' }),
     [addToast],
   )

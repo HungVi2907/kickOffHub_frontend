@@ -53,6 +53,7 @@ export const endpoints = {
     leagueTeamSeason: '/player-team-league-season/players',
     popular: '/players/popular',
     stats: '/players-stats',
+    count: '/players/count',
   },
   
   // ---------------------------------------------------------------------------
@@ -62,6 +63,8 @@ export const endpoints = {
     root: '/countries',
     byId: (id) => `/countries/${id}`,
     search: '/countries/search',
+    popular: '/countries/popular',
+    count: '/countries/count',
   },
   
   // ---------------------------------------------------------------------------

@@ -51,11 +51,11 @@ export default function TeamsPage() {
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary-500">Squads</p>
         <h1 className="text-3xl font-bold text-slate-900">Team directory</h1>
         <p className="max-w-2xl text-sm text-slate-600">
-          Duyệt danh sách câu lạc bộ, tra cứu sân vận động và đội hình theo giải đấu, mùa giải mà bạn quan tâm.
+          Browse clubs, look up stadiums, and explore squads by league and season.
         </p>
       </header>
 
-      <PopularTeams {...popularTeams} />
+      <PopularTeams teams={popularTeams.data} loading={popularTeams.loading} error={popularTeams.error} />
 
       <TeamFilters
         leagues={leagues}

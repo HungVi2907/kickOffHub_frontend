@@ -17,8 +17,8 @@ export default function LoginPage() {
 
   const highlights = useMemo(
     () => [
-      { badge: 'Realtime', text: 'Theo dõi tỉ số và phân tích dữ liệu trong thời gian thực.' },
-      { badge: 'An toàn', text: 'Tài khoản được bảo vệ bằng mã hóa JWT và xác thực đa tầng.' },
+      { badge: 'Realtime', text: 'Track scores and analyze data in real time.' },
+      { badge: 'Secure', text: 'Account protected with JWT encryption and multi-layer authentication.' },
     ],
     [],
   )
@@ -44,7 +44,7 @@ export default function LoginPage() {
       const redirectTo = location.state?.from?.pathname || ROUTES.forum
       navigate(redirectTo, { replace: true })
     } catch (err) {
-      setError(err?.message || 'Đăng nhập thất bại')
+      setError(err?.message || 'Login failed')
     } finally {
       setLoading(false)
     }
@@ -52,13 +52,13 @@ export default function LoginPage() {
 
   return (
     <AuthLayout
-      title="Chào mừng trở lại"
-      subtitle="Đăng nhập để theo dõi bài viết yêu thích, lưu chiến thuật và tham gia thảo luận với cộng đồng chuyên sâu."
+      title="Welcome back"
+      subtitle="Log in to follow your favorite posts, save tactics, and join in-depth discussions with the community."
       footer={
         <>
-          Chưa có tài khoản?{' '}
+          Don't have an account?{' '}
           <Link to={ROUTES.register} className="font-medium text-primary-600 hover:text-primary-500">
-            Đăng ký ngay
+            Sign up now
           </Link>
         </>
       }
@@ -80,13 +80,13 @@ export default function LoginPage() {
 
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-widest text-slate-600">
-            <span>Mật khẩu</span>
+            <span>Password</span>
             <button
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
               className="text-primary-600 hover:text-primary-500"
             >
-              {showPassword ? 'Ẩn' : 'Hiện'}
+              {showPassword ? 'Hide' : 'Show'}
             </button>
           </div>
           <Input
@@ -100,7 +100,7 @@ export default function LoginPage() {
             value={form.password}
             onChange={handleChange}
           />
-          <p className="text-xs text-slate-400">Sử dụng mật khẩu tối thiểu 8 ký tự để tăng bảo mật.</p>
+          <p className="text-xs text-slate-400">Use a password with at least 8 characters for better security.</p>
         </div>
 
         {error && (
@@ -108,7 +108,7 @@ export default function LoginPage() {
         )}
 
         <Button type="submit" className="w-full" isLoading={loading}>
-          {loading ? 'Đang đăng nhập...' : 'Đăng nhập vào KickOff Hub'}
+          {loading ? 'Logging in...' : 'Log in to KickOff Hub'}
         </Button>
       </form>
     </AuthLayout>

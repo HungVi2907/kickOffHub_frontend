@@ -44,7 +44,7 @@ export default function PlayerDetailPage() {
   }
 
   if (playerState.loading) {
-    return <p className="py-16 text-center text-sm text-slate-500">Đang tải thông tin cầu thủ...</p>
+    return <p className="py-16 text-center text-sm text-slate-500">Loading player information...</p>
   }
 
   if (playerState.error) {
@@ -52,11 +52,11 @@ export default function PlayerDetailPage() {
   }
 
   if (!playerState.data) {
-    return <p className="py-16 text-center text-sm text-slate-500">Không tìm thấy cầu thủ</p>
+    return <p className="py-16 text-center text-sm text-slate-500">Player not found</p>
   }
 
   const player = playerState.data
-  const nationalityLabel = player?.country?.name || player?.nationality || 'Không rõ'
+  const nationalityLabel = player?.country?.name || player?.nationality || 'Unknown'
   const flagUrl = player?.country?.flag ? withFallback(player.country.flag) : null
   const statsBlocks = statsState.data ?? []
 
@@ -64,12 +64,12 @@ export default function PlayerDetailPage() {
     <MotionSection initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="space-y-10">
       <header className="space-y-2">
         <Link to={ROUTES.players} className="text-sm font-semibold text-primary-600 hover:underline">
-          ← Quay lại danh sách cầu thủ
+          ← Back to player list
         </Link>
         <div className="space-y-1">
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary-500">Player profile</p>
           <h1 className="text-3xl font-bold text-slate-900">{player.name}</h1>
-          <p className="text-sm text-slate-500">Mã cầu thủ #{player.id}</p>
+          <p className="text-sm text-slate-500">Player ID #{player.id}</p>
         </div>
       </header>
 
@@ -83,7 +83,7 @@ export default function PlayerDetailPage() {
           <div className="space-y-3 text-center md:text-left">
             <p className="text-xl font-semibold text-slate-900">{player.name}</p>
             <div className="flex flex-wrap items-center justify-center gap-2 text-sm text-slate-600 md:justify-start">
-              <span className="font-semibold text-slate-900">Quốc tịch:</span>
+              <span className="font-semibold text-slate-900">Nationality:</span>
               {player.country?.flag ? (
                 <img src={flagUrl} alt={nationalityLabel} className="h-4 w-6 rounded object-cover" />
               ) : null}
@@ -92,37 +92,37 @@ export default function PlayerDetailPage() {
             <dl className="grid gap-4 text-left text-sm text-slate-600 sm:grid-cols-3">
               {player.age ? (
                 <div>
-                  <dt className="text-xs uppercase tracking-[0.3em] text-slate-400">Tuổi</dt>
+                  <dt className="text-xs uppercase tracking-[0.3em] text-slate-400">Age</dt>
                   <dd className="font-semibold text-slate-900">{player.age}</dd>
                 </div>
               ) : null}
               {player.position ? (
                 <div>
-                  <dt className="text-xs uppercase tracking-[0.3em] text-slate-400">Vị trí</dt>
+                  <dt className="text-xs uppercase tracking-[0.3em] text-slate-400">Position</dt>
                   <dd className="font-semibold text-slate-900">{player.position}</dd>
                 </div>
               ) : null}
               {player.number ? (
                 <div>
-                  <dt className="text-xs uppercase tracking-[0.3em] text-slate-400">Số áo</dt>
+                  <dt className="text-xs uppercase tracking-[0.3em] text-slate-400">Number</dt>
                   <dd className="font-semibold text-slate-900">{player.number}</dd>
                 </div>
               ) : null}
               {player.height ? (
                 <div>
-                  <dt className="text-xs uppercase tracking-[0.3em] text-slate-400">Chiều cao</dt>
+                  <dt className="text-xs uppercase tracking-[0.3em] text-slate-400">Height</dt>
                   <dd className="font-semibold text-slate-900">{player.height}</dd>
                 </div>
               ) : null}
               {player.weight ? (
                 <div>
-                  <dt className="text-xs uppercase tracking-[0.3em] text-slate-400">Cân nặng</dt>
+                  <dt className="text-xs uppercase tracking-[0.3em] text-slate-400">Weight</dt>
                   <dd className="font-semibold text-slate-900">{player.weight}</dd>
                 </div>
               ) : null}
               {player.birth_date ? (
                 <div>
-                  <dt className="text-xs uppercase tracking-[0.3em] text-slate-400">Ngày sinh</dt>
+                  <dt className="text-xs uppercase tracking-[0.3em] text-slate-400">Birth date</dt>
                   <dd className="font-semibold text-slate-900">{player.birth_date}</dd>
                 </div>
               ) : null}
@@ -135,8 +135,8 @@ export default function PlayerDetailPage() {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-1">
             <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-500">Performance stats</p>
-            <h2 className="text-2xl font-bold text-slate-900">Chỉ số theo mùa giải</h2>
-            <p className="text-sm text-slate-500">Lọc theo mùa giải, giải đấu hoặc đội bóng để tải số liệu từ API-Football.</p>
+            <h2 className="text-2xl font-bold text-slate-900">Season statistics</h2>
+            <p className="text-sm text-slate-500">Filter by season, league, or team to load stats from API-Football.</p>
           </div>
           <form onSubmit={handleSubmit} className="grid w-full gap-2 sm:grid-cols-2 lg:w-auto lg:grid-cols-4">
             <Input
@@ -168,19 +168,19 @@ export default function PlayerDetailPage() {
             />
             <div className="flex items-center gap-2">
               <Button type="submit" className="flex-1">
-                Tải dữ liệu
+                Load data
               </Button>
               <Button type="button" variant="outline" size="sm" onClick={handleReset}>
-                Xoá
+                Clear
               </Button>
             </div>
           </form>
         </div>
 
-        {statsState.loading && <p className="text-sm text-slate-500">Đang đồng bộ dữ liệu thống kê...</p>}
+        {statsState.loading && <p className="text-sm text-slate-500">Syncing statistics data...</p>}
         {statsState.error && <p className="text-sm text-red-500">{statsState.error.message}</p>}
         {!statsState.loading && !statsState.error && !statsBlocks.length && (
-          <p className="text-sm text-slate-500">Chưa có thống kê nào cho bộ lọc hiện tại.</p>
+          <p className="text-sm text-slate-500">No statistics available for current filters.</p>
         )}
 
         {!statsState.loading && !statsState.error && statsBlocks.length > 0 && (
@@ -204,15 +204,15 @@ export default function PlayerDetailPage() {
                   </div>
                 </div>
                 <div className="grid gap-3 md:grid-cols-3">
-                  <StatTile label="Ra sân" value={stat?.games?.appearences ?? '—'} subtext={`Phút thi đấu: ${stat?.games?.minutes ?? 0}`} />
-                  <StatTile label="Điểm" value={stat?.games?.rating ? Number(stat.games.rating).toFixed(2) : '—'} subtext={`Đá chính: ${stat?.games?.lineups ?? 0}`} />
-                  <StatTile label="Bàn thắng" value={stat?.goals?.total ?? 0} subtext={`Kiến tạo: ${stat?.goals?.assists ?? 0}`} />
-                  <StatTile label="Dứt điểm" value={stat?.shots?.total ?? 0} subtext={`Trúng đích: ${stat?.shots?.on ?? 0}`} />
-                  <StatTile label="Chuyền bóng" value={stat?.passes?.total ?? 0} subtext={`Quan trọng: ${stat?.passes?.key ?? 0}`} />
-                  <StatTile label="Qua người" value={stat?.dribbles?.attempts ?? 0} subtext={`Thành công: ${stat?.dribbles?.success ?? 0}`} />
-                  <StatTile label="Tranh chấp" value={stat?.duels?.total ?? 0} subtext={`Thắng: ${stat?.duels?.won ?? 0}`} />
-                  <StatTile label="Phòng ngự" value={stat?.tackles?.total ?? 0} subtext={`Cắt bóng: ${stat?.tackles?.interceptions ?? 0}`} />
-                  <StatTile label="Thẻ phạt" value={`🟨 ${stat?.cards?.yellow ?? 0} • 🟥 ${stat?.cards?.red ?? 0}`} subtext={`Phạm lỗi: ${stat?.fouls?.committed ?? 0}`} />
+                  <StatTile label="Appearances" value={stat?.games?.appearences ?? '—'} subtext={`Minutes played: ${stat?.games?.minutes ?? 0}`} />
+                  <StatTile label="Rating" value={stat?.games?.rating ? Number(stat.games.rating).toFixed(2) : '—'} subtext={`Starting XI: ${stat?.games?.lineups ?? 0}`} />
+                  <StatTile label="Goals" value={stat?.goals?.total ?? 0} subtext={`Assists: ${stat?.goals?.assists ?? 0}`} />
+                  <StatTile label="Shots" value={stat?.shots?.total ?? 0} subtext={`On target: ${stat?.shots?.on ?? 0}`} />
+                  <StatTile label="Passes" value={stat?.passes?.total ?? 0} subtext={`Key passes: ${stat?.passes?.key ?? 0}`} />
+                  <StatTile label="Dribbles" value={stat?.dribbles?.attempts ?? 0} subtext={`Successful: ${stat?.dribbles?.success ?? 0}`} />
+                  <StatTile label="Duels" value={stat?.duels?.total ?? 0} subtext={`Won: ${stat?.duels?.won ?? 0}`} />
+                  <StatTile label="Tackles" value={stat?.tackles?.total ?? 0} subtext={`Interceptions: ${stat?.tackles?.interceptions ?? 0}`} />
+                  <StatTile label="Cards" value={`🟨 ${stat?.cards?.yellow ?? 0} • 🟥 ${stat?.cards?.red ?? 0}`} subtext={`Fouls: ${stat?.fouls?.committed ?? 0}`} />
                 </div>
               </article>
             ))}
