@@ -44,10 +44,11 @@ export default function Login() {
 
     try {
       const { data } = await apiClient.post('/auth/login', form)
-      if (!data?.token || !data?.user) {
+      const payload = data?.data ?? data
+      if (!payload?.token || !payload?.user) {
         throw new Error('Invalid login response')
       }
-      login({ token: data.token, user: data.user })
+      login({ token: payload.token, user: payload.user })
       const redirectTo = location.state?.from?.pathname || ROUTES.forum
       navigate(redirectTo, { replace: true })
     } catch (err) {
