@@ -5,7 +5,7 @@ import Input from '@/shared/components/ui/Input.jsx'
 import Card from '@/shared/components/ui/Card.jsx'
 import { ROUTES } from '@/app/paths.js'
 import postApi from '@/features/posts/api.js'
-import { uploadToCloudinary, CLOUDINARY_CONFIG } from '@/lib/cloudinary.js'
+// Đã loại bỏ Cloudinary, chỉ dùng API backend
 import getApiErrorMessage from '@/shared/utils/getApiErrorMessage.js'
 import { uploadImage } from "../api/upload";
 
@@ -97,18 +97,18 @@ export default function PostCreatePage() {
 		const file = event.target.files?.[0]
 		if (!file) return
 
-		// Validate file type using Cloudinary config
-		if (!CLOUDINARY_CONFIG.allowedTypes.includes(file.type)) {
-			setError('Vui lòng chọn file ảnh hợp lệ (JPEG, PNG, GIF, WebP)')
-			return
-		}
-
-		// Validate file size using Cloudinary config
-		if (file.size > CLOUDINARY_CONFIG.maxFileSize) {
-			const maxSizeMB = CLOUDINARY_CONFIG.maxFileSize / (1024 * 1024)
-			setError(`Kích thước ảnh tối đa là ${maxSizeMB}MB`)
-			return
-		}
+				// Validate file type
+				const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+				if (!allowedTypes.includes(file.type)) {
+					setError('Vui lòng chọn file ảnh hợp lệ (JPEG, PNG, GIF, WebP)');
+					return;
+				}
+				// Validate file size (5MB)
+				const maxFileSize = 5 * 1024 * 1024;
+				if (file.size > maxFileSize) {
+					setError('Kích thước ảnh tối đa là 5MB');
+					return;
+				}
 
 		// Clear any previous errors
 		setError('')
@@ -157,28 +157,22 @@ export default function PostCreatePage() {
 		setSubmitting(true)
 		try {
 			// ---------------------------------------------------------------------
-			// Step 1: Upload image to Cloudinary (if selected)
-			// IMPORTANT: Cloudinary direct upload uses UNSIGNED preset.
-			// uploadToCloudinary now returns secure_url string directly.
+			// Step 1: Upload image qua API backend (nếu có ảnh)
 			// ---------------------------------------------------------------------
-			let imageUrl = null
+			let imageUrl = null;
 			if (imageFile) {
-				setUploadingImage(true)
+				setUploadingImage(true);
 				try {
-					// uploadToCloudinary returns the secure_url string directly
-					// e.g., "https://res.cloudinary.com/dwb1iwxp9/image/upload/v123/abc.jpg"
-					imageUrl = await uploadToCloudinary(imageFile)
-					
+					imageUrl = await uploadImage(imageFile);
 					if (!imageUrl) {
-						throw new Error('Upload succeeded but no URL returned')
+						throw new Error('Upload succeeded but no URL returned');
 					}
-					
-					console.log('✅ Image uploaded successfully:', imageUrl)
+					console.log('✅ Image uploaded successfully:', imageUrl);
 				} catch (uploadError) {
-					console.error('❌ Image upload failed:', uploadError)
-					throw new Error(`Lỗi tải ảnh: ${uploadError.message}`)
+					console.error('❌ Image upload failed:', uploadError);
+					throw new Error(`Lỗi tải ảnh: ${uploadError.message}`);
 				} finally {
-					setUploadingImage(false)
+					setUploadingImage(false);
 				}
 			}
 
