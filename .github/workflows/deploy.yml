@@ -3,6 +3,17 @@ name: Deploy Frontend (Vite) to EC2
 on:
   push:
     branches: ["main"]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: 20.19.0
+  BUILD_ARCHIVE: frontend-dist.tgz
+  REMOTE_BUILD_DIR: /home/${{ secrets.EC2_USER }}/kickOffHub_frontend_build
+  REMOTE_WEB_ROOT: /var/www/html
+
+concurrency:
+  group: frontend-deploy
+  cancel-in-progress: true
 
 jobs:
   build-and-deploy:
@@ -10,29 +21,43 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Use Node.js 20.19.0
+      - name: Use Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
         with:
-          node-version: 20.19.0
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
 
-      - name: Install dependencies (pnpm or npm)
-        run: |
-          if [ -f pnpm-lock.yaml ]; then
-            npm install -g pnpm
-            pnpm install --frozen-lockfile
-            pnpm build
-          else
-            npm ci
-            npm run build
-          fi
+      - name: Install dependencies
         env:
           CI: true
+        run: npm ci
+
+      - name: Build
+        run: npm run build
 
       - name: Archive build folder
-        run: |
-          tar -czf frontend-dist.tgz dist
+        run: tar -czf ${{ env.BUILD_ARCHIVE }} dist
+
+      - name: Upload build artifact (debug)
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: ${{ env.BUILD_ARCHIVE }}
+          retention-days: 3
+
+      - name: Ensure remote build directory
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            set -e
+            mkdir -p "${{ env.REMOTE_BUILD_DIR }}"
+            rm -rf "${{ env.REMOTE_BUILD_DIR }}/dist"
+            rm -f "${{ env.REMOTE_BUILD_DIR }}/${{ env.BUILD_ARCHIVE }}"
 
       - name: Copy build archive to EC2
         uses: appleboy/scp-action@master
@@ -40,8 +65,8 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "frontend-dist.tgz"
-          target: "/home/${{ secrets.EC2_USER }}/kickOffHub_frontend_build/"
+          source: ${{ env.BUILD_ARCHIVE }}
+          target: ${{ env.REMOTE_BUILD_DIR }}
 
       - name: Extract and deploy on EC2
         uses: appleboy/ssh-action@v1.0.0
@@ -51,14 +76,9 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             set -e
-
-            BUILD_TMP="/home/$USER/kickOffHub_frontend_build"
-            cd "$BUILD_TMP"
-
-            tar -xzf frontend-dist.tgz
-
-            sudo rsync -av --delete dist/ /var/www/html/
-
+            cd "${{ env.REMOTE_BUILD_DIR }}"
+            tar -xzf "${{ env.BUILD_ARCHIVE }}"
+            sudo rsync -a --delete dist/ "${{ env.REMOTE_WEB_ROOT }}/"
             sudo systemctl reload nginx || sudo service nginx reload
-
+            rm -rf dist "${{ env.BUILD_ARCHIVE }}"
             echo "Deploy finished!"
