@@ -8,5 +8,10 @@ export async function uploadImage(file) {
   });
 
   const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.error || "Upload thất bại");
+  }
+
   return data.url;
 }
