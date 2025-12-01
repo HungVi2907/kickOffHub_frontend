@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import apiClient from '../utils/apiClient.js'
-import { ROUTES } from '../routes/paths.js'
+import getApiErrorMessage from '../utils/getApiErrorMessage.js'
+import { ROUTES } from '@/app/paths.js'
 
 const MotionSection = motion.section
 
@@ -122,7 +123,7 @@ export default function Search() {
         setResults(nextResults)
       } catch (err) {
         if (ignore) return
-        setError(err.response?.data?.error || 'Unable to perform search right now.')
+        setError(getApiErrorMessage(err, 'Unable to perform search right now.'))
         setResults({ players: [], teams: [], countries: [] })
       } finally {
         if (!ignore) {

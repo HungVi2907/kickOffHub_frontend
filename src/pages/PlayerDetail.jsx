@@ -1,7 +1,11 @@
+export { default } from '@/features/players/pages/PlayerDetail.jsx'
+
+/* Legacy implementation preserved for reference.
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import apiClient from '../utils/apiClient.js'
+import getApiErrorMessage from '../utils/getApiErrorMessage.js'
 
 const MotionSection = motion.section
 
@@ -31,7 +35,7 @@ export default function PlayerDetail() {
         const response = await apiClient.get(`/players/${id}`)
         setPlayer(response.data)
       } catch (err) {
-        setError(err.response?.data?.error || 'Failed to fetch player details')
+        setError(getApiErrorMessage(err, 'Failed to fetch player details'))
       } finally {
         setLoading(false)
       }
@@ -59,7 +63,7 @@ export default function PlayerDetail() {
       setPlayerStats(stats)
     } catch (err) {
       setPlayerStats([])
-      setStatsError(err.response?.data?.error || 'Failed to load player stats')
+      setStatsError(getApiErrorMessage(err, 'Failed to load player stats'))
     } finally {
       setStatsLoading(false)
     }
@@ -310,3 +314,4 @@ export default function PlayerDetail() {
     </MotionSection>
   )
 }
+*/

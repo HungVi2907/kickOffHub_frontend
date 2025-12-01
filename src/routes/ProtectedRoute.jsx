@@ -1,7 +1,7 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useShallow } from 'zustand/react/shallow'
 import useAuthStore from '../store/useAuthStore.js'
-import { ROUTES } from './paths.js'
+import { ROUTES } from '@/app/paths.js'
 
 export default function ProtectedRoute() {
   const { token, hasHydrated } = useAuthStore(

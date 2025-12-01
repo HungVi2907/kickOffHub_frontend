@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import apiClient from '../utils/apiClient.js'
-import { ROUTES } from '../routes/paths.js'
+import getApiErrorMessage from '../utils/getApiErrorMessage.js'
+import { ROUTES } from '@/app/paths.js'
 
 const STATUS_OPTIONS = [
   { value: 'public', label: 'Công khai' },
@@ -64,8 +65,7 @@ export default function PostCreate() {
       setSuccess('Đăng bài thành công! Đang chuyển đến bài viết...')
       setTimeout(() => navigate(`${ROUTES.forum}/${data.id}`), 800)
     } catch (err) {
-      const message = err.response?.data?.error || err.message || 'Không thể đăng bài viết'
-      setError(message)
+      setError(getApiErrorMessage(err, 'Không thể đăng bài viết'))
     } finally {
       setSubmitting(false)
     }

@@ -1,7 +1,11 @@
+export { default } from '@/features/players/pages/Players.jsx'
+
+/* Legacy implementation preserved for reference.
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import apiClient from '../utils/apiClient.js'
+import getApiErrorMessage from '../utils/getApiErrorMessage.js'
 
 const MotionSection = motion.section
 
@@ -37,7 +41,7 @@ export default function Players() {
           setPagination(response.data.pagination || {})
         }
       } catch (err) {
-        setError(err.response?.data?.error || 'Failed to fetch players')
+        setError(getApiErrorMessage(err, 'Failed to fetch players'))
       } finally {
         setLoading(false)
       }
@@ -58,7 +62,7 @@ export default function Players() {
         }
       } catch (err) {
         if (!ignore) {
-          setPopularError(err.response?.data?.error || 'Failed to load fan favorites')
+          setPopularError(getApiErrorMessage(err, 'Failed to load fan favorites'))
         }
       } finally {
         if (!ignore) {
@@ -195,3 +199,4 @@ export default function Players() {
     </MotionSection>
   )
 }
+*/

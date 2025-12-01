@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
-import apiClient from '../utils/apiClient'
 import { Link } from 'react-router-dom'
+import apiClient from '../utils/apiClient'
+import getApiErrorMessage from '../utils/getApiErrorMessage.js'
 
 const MotionSection = motion.section
 
@@ -36,7 +37,7 @@ export default function Teams() {
         }
       } catch (err) {
         if (!ignore) {
-          setPopularError(err.response?.data?.error || 'Failed to load popular teams')
+          setPopularError(getApiErrorMessage(err, 'Failed to load popular teams'))
         }
       } finally {
         if (!ignore) {

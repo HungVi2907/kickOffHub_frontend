@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import apiClient from '../utils/apiClient.js'
-import { ROUTES } from '../routes/paths.js'
+import getApiErrorMessage from '../utils/getApiErrorMessage.js'
+import { ROUTES } from '@/app/paths.js'
 
 const DEFAULT_LIMIT = 10
 
@@ -36,8 +37,7 @@ export default function Forum() {
         }))
       } catch (err) {
         if (err.name === 'CanceledError') return
-        const message = err.response?.data?.error || err.message || 'Không thể tải danh sách bài viết'
-        setError(message)
+        setError(getApiErrorMessage(err, 'Không thể tải danh sách bài viết'))
       } finally {
         setLoading(false)
       }

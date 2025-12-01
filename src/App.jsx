@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import { useLocation } from 'react-router-dom'
-import AppRoutes from './routes/AppRoutes.jsx'
+import AppRoutes from '@/app/routes.jsx'
 
 function App() {
   const location = useLocation()

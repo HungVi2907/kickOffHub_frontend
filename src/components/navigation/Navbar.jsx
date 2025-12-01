@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useShallow } from 'zustand/react/shallow'
-import { NAV_LINKS, ROUTES } from '../../routes/paths.js'
+import { NAV_LINKS, ROUTES } from '@/app/paths.js'
 import useAuthStore from '../../store/useAuthStore.js'
 
 const linkBaseClass =

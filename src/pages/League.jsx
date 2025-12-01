@@ -3,6 +3,7 @@ import axios from 'axios'
 import { motion } from 'framer-motion'
 import { useNavigate, useParams } from 'react-router-dom'
 import apiClient from '../utils/apiClient.js'
+import getApiErrorMessage from '../utils/getApiErrorMessage.js'
 
 const MotionSection = motion.section
 const MotionCard = motion.article
@@ -95,12 +96,7 @@ export default function League() {
       })
       .catch((err) => {
         if (axios.isCancel(err)) return
-        const message =
-          err.response?.data?.message ||
-          err.response?.data?.error ||
-          err.message ||
-          'Failed to load seasons list'
-        setSeasonError(message)
+        setSeasonError(getApiErrorMessage(err, 'Failed to load seasons list'))
       })
       .finally(() => {
         setSeasonLoading(false)
@@ -134,12 +130,7 @@ export default function League() {
       })
       .catch((err) => {
         if (axios.isCancel(err)) return
-        const message =
-          err.response?.data?.message ||
-          err.response?.data?.error ||
-          err.message ||
-          'Failed to load leagues'
-        setLeaguesError(message)
+        setLeaguesError(getApiErrorMessage(err, 'Failed to load leagues'))
       })
       .finally(() => {
         setLeaguesLoading(false)
@@ -163,8 +154,7 @@ export default function League() {
       })
       .catch((err) => {
         if (axios.isCancel(err)) return
-        const message = err.response?.data?.message || err.message || 'Failed to load league details'
-        setError(message)
+        setError(getApiErrorMessage(err, 'Failed to load league details'))
       })
       .finally(() => {
         setLoading(false)
@@ -199,8 +189,7 @@ export default function League() {
       })
       .catch((err) => {
         if (axios.isCancel(err)) return
-        const message = err.response?.data?.message || err.message || 'Failed to load league teams'
-        setTeamsError(message)
+        setTeamsError(getApiErrorMessage(err, 'Failed to load league teams'))
       })
       .finally(() => {
         setTeamsLoading(false)

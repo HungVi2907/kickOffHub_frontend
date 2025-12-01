@@ -3,8 +3,9 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useShallow } from 'zustand/react/shallow'
 import AuthLayout from '../components/layout/AuthLayout.jsx'
 import apiClient from '../utils/apiClient.js'
+import getApiErrorMessage from '../utils/getApiErrorMessage.js'
 import useAuthStore from '../store/useAuthStore.js'
-import { ROUTES } from '../routes/paths.js'
+import { ROUTES } from '@/app/paths.js'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -50,8 +51,7 @@ export default function Login() {
       const redirectTo = location.state?.from?.pathname || ROUTES.forum
       navigate(redirectTo, { replace: true })
     } catch (err) {
-      const message = err.response?.data?.error || err.response?.data?.message || err.message || 'Đăng nhập thất bại'
-      setError(message)
+      setError(getApiErrorMessage(err, 'Đăng nhập thất bại'))
     } finally {
       setLoading(false)
     }

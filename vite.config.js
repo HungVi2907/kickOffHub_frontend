@@ -1,20 +1,33 @@
-import { defineConfig } from 'vite'
+import path from 'node:path'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vite.dev/config/
-export default defineConfig({
-  plugins: [react()],
-  // Dev server proxy to backend API to avoid CORS during development
-  server: {
-    proxy: {
-      // Proxy any request starting with /api to the backend server
-      '/api': {
-        // Use local backend by default, allow override with env var when needed
-        target: 'http://localhost:3000/',
-        changeOrigin: true,
-        secure: false,
-        // rewrite: (path) => path.replace(/^\/api/, '/api') // no rewrite needed
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '')
+  const proxyTarget = env.VITE_DEV_PROXY_TARGET || 'http://localhost:3000'
+
+  return {
+    plugins: [react()],
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, 'src'),
       },
     },
-  },
+    server: {
+      host: env.VITE_DEV_HOST || '0.0.0.0',
+      port: Number(env.VITE_DEV_PORT) || 5173,
+      proxy: {
+        '/api': {
+          target: proxyTarget,
+          changeOrigin: true,
+          secure: false,
+        },
+      },
+    },
+    build: {
+      sourcemap: mode !== 'production',
+      assetsDir: 'static',
+      outDir: 'dist',
+    },
+  }
 })

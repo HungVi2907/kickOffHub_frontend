@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import AuthLayout from '../components/layout/AuthLayout.jsx'
 import apiClient from '../utils/apiClient.js'
-import { ROUTES } from '../routes/paths.js'
+import getApiErrorMessage from '../utils/getApiErrorMessage.js'
+import { ROUTES } from '@/app/paths.js'
 
 export default function Register() {
   const navigate = useNavigate()
@@ -55,8 +56,7 @@ export default function Register() {
       setSuccess('Đăng ký thành công! Vui lòng đăng nhập để bắt đầu.')
       setTimeout(() => navigate(ROUTES.login), 1200)
     } catch (err) {
-      const message = err.response?.data?.error || err.response?.data?.message || err.message || 'Đăng ký thất bại'
-      setError(message)
+      setError(getApiErrorMessage(err, 'Đăng ký thất bại'))
     } finally {
       setLoading(false)
     }

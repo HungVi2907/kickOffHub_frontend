@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import apiClient from '../utils/apiClient.js'
 import useAuthStore from '../store/useAuthStore.js'
-import { ROUTES } from '../routes/paths.js'
+import getApiErrorMessage from '../utils/getApiErrorMessage.js'
+import { ROUTES } from '@/app/paths.js'
 
 export default function PostDetail() {
   const { postId } = useParams()
@@ -33,8 +34,7 @@ export default function PostDetail() {
         }
       } catch (err) {
         if (!ignore) {
-          const message = err.response?.data?.error || err.message || 'Không thể tải bài viết'
-          setError(message)
+          setError(getApiErrorMessage(err, 'Không thể tải bài viết'))
         }
       } finally {
         if (!ignore) setLoading(false)
@@ -74,10 +74,11 @@ export default function PostDetail() {
       setCommentForm({ content: '' })
     } catch (err) {
       if (err.response?.status === 429) {
-        setRateLimitError(err.response.data?.error || 'Bạn đang bình luận quá nhanh, vui lòng thử lại sau.')
+        setRateLimitError(
+          err.response?.data?.error?.message || 'Bạn đang bình luận quá nhanh, vui lòng thử lại sau.'
+        )
       } else {
-        const message = err.response?.data?.error || err.message || 'Không thể gửi bình luận'
-        setCommentError(message)
+        setCommentError(getApiErrorMessage(err, 'Không thể gửi bình luận'))
       }
     } finally {
       setCommentLoading(false)
@@ -93,8 +94,7 @@ export default function PostDetail() {
       const { data } = await apiClient.post(`/posts/${postId}/like`)
       setLikeState({ liked: data.liked, count: data.likeCount })
     } catch (err) {
-      const message = err.response?.data?.error || err.message || 'Không thể xử lý yêu cầu like'
-      setError(message)
+      setError(getApiErrorMessage(err, 'Không thể xử lý yêu cầu like'))
     }
   }
 
@@ -107,8 +107,7 @@ export default function PostDetail() {
       await apiClient.post(`/posts/${postId}/report`)
       alert('Đã gửi báo cáo bài viết. Cảm ơn bạn!')
     } catch (err) {
-      const message = err.response?.data?.error || err.message || 'Không thể báo cáo bài viết'
-      setError(message)
+      setError(getApiErrorMessage(err, 'Không thể báo cáo bài viết'))
     }
   }
 
