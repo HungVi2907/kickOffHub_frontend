@@ -35,19 +35,34 @@ export function useAuth() {
   const handleLogin = useCallback(
     async (credentials) => {
       const response = await authApi.login(credentials)
+      // API returns normalized: { success, message, data: { token, user } }
+      // or { success, message, data: { accessToken, refreshToken, user } }
       const payload = response?.data ?? response
-      if (!payload?.accessToken && !payload?.token) {
+      
+      // Backend có thể trả về "token" hoặc "accessToken"
+      const tokenValue = payload?.token || payload?.accessToken || payload?.tokens?.accessToken
+      
+      if (!tokenValue) {
         throw new Error('Phản hồi đăng nhập không hợp lệ')
       }
+      
+      // Lưu token (dùng accessToken làm key trong store)
       login({
-        accessToken: payload.accessToken || payload.token,
-        refreshToken: payload.refreshToken,
+        accessToken: tokenValue,
+        refreshToken: payload.refreshToken || payload.tokens?.refreshToken || null,
         user: payload.user,
       })
+      
+      // Fetch profile if user data not included
       if (!payload.user) {
-        const profile = await authApi.profile()
-        setUser(profile.data ?? profile)
+        try {
+          const profile = await authApi.profile()
+          setUser(profile.data ?? profile)
+        } catch (err) {
+          console.warn('Failed to fetch profile after login:', err)
+        }
       }
+      
       toast.success('Đăng nhập thành công')
       return payload
     },

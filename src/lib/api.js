@@ -1,10 +1,34 @@
+/**
+ * =============================================================================
+ * AXIOS HTTP CLIENT
+ * =============================================================================
+ * 
+ * This module exports a configured axios instance that ALL API calls must use.
+ * 
+ * CRITICAL: Never use raw fetch() or create new axios instances.
+ * Doing so bypasses:
+ *   1. baseURL configuration → causes 404 errors
+ *   2. Authorization header injection → causes 401 errors
+ *   3. Token refresh logic → causes session expiry issues
+ * 
+ * URL RESOLUTION:
+ * - Development: VITE_API_URL=/api → Vite proxy forwards to localhost:3000
+ * - Production: VITE_API_URL=https://api.kickoffhub.space/api
+ * 
+ * WRONG: fetch('/api/posts')     → Browser resolves to localhost:5173/api/posts
+ * RIGHT: api.get('/posts')       → axios uses baseURL → correct backend URL
+ */
 import axios from 'axios'
 import endpoints from './endpoints.js'
 import useAuthStore from '@/features/auth/store.js'
 
+// Determine the API base URL from environment variables
+// In development: /api (uses Vite proxy to forward to backend)
+// In production: Full backend URL
 const fallbackBaseUrl = import.meta.env.DEV ? '/api' : 'https://api.kickoffhub.space/api'
 const API_BASE_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || fallbackBaseUrl
 
+// Create axios instance with baseURL - ALL API calls must use this instance
 const http = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,

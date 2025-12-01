@@ -14,4 +14,7 @@ export function withFallback(src, fallback = 'https://placehold.co/200x200?text=
   return resolved || fallback
 }
 
+// Convenient alias
+export const img = buildImageUrl
+
 export default buildImageUrl

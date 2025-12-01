@@ -3,7 +3,7 @@ import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useShallow } from 'zustand/react/shallow'
 import { NAV_LINKS, ROUTES } from '@/app/paths.js'
-import useAuthStore from '../../store/useAuthStore.js'
+import useAuthStore from '@/features/auth/store.js'
 
 const linkBaseClass =
   'px-3 py-2 text-sm font-medium transition-colors duration-200 rounded-md'
@@ -15,8 +15,8 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const navigate = useNavigate()
-  const { token, user, logout } = useAuthStore(
-    useShallow((state) => ({ token: state.token, user: state.user, logout: state.logout })),
+  const { accessToken, user, logout } = useAuthStore(
+    useShallow((state) => ({ accessToken: state.accessToken, user: state.user, logout: state.logout })),
   )
   const initials = useMemo(() => {
     if (!user?.name) return 'KH'
@@ -139,7 +139,7 @@ export default function Navbar() {
             </button>
           </form>
           <div className="hidden items-center gap-2 lg:flex">
-            {token ? (
+            {accessToken ? (
               <>
                 <div className="flex items-center gap-3 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm">
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100 font-semibold text-primary-700">
@@ -188,7 +188,7 @@ export default function Navbar() {
           >
             <div className="flex flex-col gap-2">
               {NAV_LINKS.map(renderLink)}
-              {token ? (
+              {accessToken ? (
                 <button
                   type="button"
                   onClick={handleLogout}
@@ -221,3 +221,4 @@ export default function Navbar() {
     </MotionHeader>
   )
 }
+

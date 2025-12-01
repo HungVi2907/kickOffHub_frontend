@@ -70,15 +70,31 @@ export default function PostDetailPage() {
 			setCommentError('Bạn cần đăng nhập để bình luận bài viết này.')
 			return
 		}
-		if (!commentValue.trim()) {
+		
+		// Validate comment content
+		const trimmedComment = commentValue.trim()
+		if (!trimmedComment) {
 			setCommentError('Nội dung bình luận không được để trống')
 			return
 		}
+		// Backend requires minimum 5 characters
+		if (trimmedComment.length < 5) {
+			setCommentError('Bình luận phải có ít nhất 5 ký tự')
+			return
+		}
+		// Backend allows maximum 500 characters
+		if (trimmedComment.length > 500) {
+			setCommentError('Bình luận không được vượt quá 500 ký tự')
+			return
+		}
+		
 		setCommentLoading(true)
 		setCommentError('')
 		setRateLimitError('')
 		try {
-			const response = await actions.comment({ content: commentValue.trim() })
+			// IMPORTANT: Backend expects { content: string }
+			// Using wrong key (text/comment/body) causes 400 Bad Request
+			const response = await actions.comment({ content: trimmedComment })
 			const newComment = response?.data ?? response
 			setPost((prev) => ({ ...prev, comments: [...(prev?.comments ?? []), newComment] }))
 			setCommentValue('')
@@ -118,6 +134,19 @@ export default function PostDetailPage() {
 						<time>{post.created_at ? new Date(post.created_at).toLocaleString() : ''}</time>
 					</div>
 					<h1 className="text-3xl font-bold text-slate-900">{post.title}</h1>
+					
+					{/* Post Image (if available) */}
+					{(post.imageUrl || post.image_url) && (
+						<div className="my-4 overflow-hidden rounded-xl border border-slate-200">
+							<img
+								src={post.imageUrl || post.image_url}
+								alt={post.title}
+								className="max-h-[500px] w-full object-contain bg-slate-50"
+								loading="lazy"
+							/>
+						</div>
+					)}
+					
 					<div className="prose max-w-none text-slate-700 whitespace-pre-line">{post.content}</div>
 					{Array.isArray(post.tags) && post.tags.length > 0 && (
 						<div className="flex flex-wrap gap-2">

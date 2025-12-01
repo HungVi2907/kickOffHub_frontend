@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import AuthLayout from '@/components/layout/AuthLayout.jsx'
+import AuthLayout from '@/shared/components/layout/AuthLayout.jsx'
 import Button from '@/shared/components/ui/Button.jsx'
 import Input from '@/shared/components/ui/Input.jsx'
 import { ROUTES } from '@/app/paths.js'

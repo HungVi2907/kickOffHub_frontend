@@ -157,30 +157,43 @@ export default function ForumPage() {
 							to={`${ROUTES.forum}/${post.id}`}
 							className="group h-full"
 						>
-							<Card className="flex h-full flex-col justify-between border-slate-200 bg-white/80 p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
-								<div className="space-y-3">
-									<div className="flex items-center justify-between text-xs text-slate-400">
-										<span>#{post.id}</span>
-										<span>{post.likeCount ?? 0} lượt thích</span>
-									</div>
-									<h3 className="text-xl font-semibold text-slate-900 transition group-hover:text-primary-600 line-clamp-2">
-										{post.title}
-									</h3>
-									<p className="text-sm text-slate-600 line-clamp-3">{post.content}</p>
-								</div>
-								<div className="mt-3 flex items-center justify-between text-xs text-slate-500">
-									<span>{post.author?.name || 'Ẩn danh'}</span>
-									<time>{post.created_at ? new Date(post.created_at).toLocaleString() : 'Mới'}</time>
-								</div>
-								{Array.isArray(post.tags) && post.tags.length > 0 && (
-									<div className="mt-3 flex flex-wrap gap-2">
-										{post.tags.map((tagItem) => (
-											<span key={tagItem.id || tagItem.name} className="rounded-full bg-primary-100 px-2 py-1 text-xs font-medium text-primary-700">
-												#{tagItem.name}
-											</span>
-										))}
+							<Card className="flex h-full flex-col justify-between border-slate-200 bg-white/80 shadow-sm transition hover:-translate-y-1 hover:shadow-lg overflow-hidden">
+								{/* Post Image (if available) */}
+								{(post.imageUrl || post.image_url) && (
+									<div className="relative h-40 w-full overflow-hidden bg-slate-100">
+										<img
+											src={post.imageUrl || post.image_url}
+											alt={post.title}
+											className="h-full w-full object-cover transition group-hover:scale-105"
+											loading="lazy"
+										/>
 									</div>
 								)}
+								<div className="flex flex-1 flex-col justify-between p-5">
+									<div className="space-y-3">
+										<div className="flex items-center justify-between text-xs text-slate-400">
+											<span>#{post.id}</span>
+											<span>{post.likeCount ?? 0} lượt thích</span>
+										</div>
+										<h3 className="text-xl font-semibold text-slate-900 transition group-hover:text-primary-600 line-clamp-2">
+											{post.title}
+										</h3>
+										<p className="text-sm text-slate-600 line-clamp-3">{post.content}</p>
+									</div>
+									<div className="mt-3 flex items-center justify-between text-xs text-slate-500">
+										<span>{post.author?.name || 'Ẩn danh'}</span>
+										<time>{post.created_at ? new Date(post.created_at).toLocaleString() : 'Mới'}</time>
+									</div>
+									{Array.isArray(post.tags) && post.tags.length > 0 && (
+										<div className="mt-3 flex flex-wrap gap-2">
+											{post.tags.map((tagItem) => (
+												<span key={tagItem.id || tagItem.name} className="rounded-full bg-primary-100 px-2 py-1 text-xs font-medium text-primary-700">
+													#{tagItem.name}
+												</span>
+											))}
+										</div>
+									)}
+								</div>
 							</Card>
 						</Link>
 					))}

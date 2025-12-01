@@ -5,13 +5,30 @@ import Input from '@/shared/components/ui/Input.jsx'
 import Card from '@/shared/components/ui/Card.jsx'
 import { ROUTES } from '@/app/paths.js'
 import postApi from '@/features/posts/api.js'
+import { uploadToCloudinary, CLOUDINARY_CONFIG } from '@/lib/cloudinary.js'
 import getApiErrorMessage from '@/shared/utils/getApiErrorMessage.js'
 
+// =============================================================================
+// CONSTANTS
+// =============================================================================
+
+/**
+ * Post status options for the dropdown
+ */
 const STATUS_OPTIONS = [
 	{ value: 'public', label: 'Công khai' },
 	{ value: 'draft', label: 'Lưu nháp' },
 ]
 
+// =============================================================================
+// HELPER FUNCTIONS
+// =============================================================================
+
+/**
+ * Parse comma-separated tags string into an array of unique tags
+ * @param {string} raw - Raw tags string (e.g., "tag1, tag2, TAG1")
+ * @returns {string[]} - Array of unique tags (case-insensitive deduplication)
+ */
 const parseTags = (raw) => {
 	if (!raw) return []
 	const unique = new Map()
@@ -28,25 +45,105 @@ const parseTags = (raw) => {
 	return [...unique.values()]
 }
 
+// =============================================================================
+// MAIN COMPONENT
+// =============================================================================
+
 export default function PostCreatePage() {
 	const navigate = useNavigate()
+	
+	// -----------------------------------------------------------------------------
+	// Form State
+	// -----------------------------------------------------------------------------
 	const [form, setForm] = useState({ title: '', content: '', tags: '', status: 'public' })
+	
+	// -----------------------------------------------------------------------------
+	// Image Upload State
+	// -----------------------------------------------------------------------------
+	const [imageFile, setImageFile] = useState(null) // The selected File object
+	const [imagePreview, setImagePreview] = useState('') // Object URL for preview
+	const [uploadingImage, setUploadingImage] = useState(false) // Upload in progress flag
+	
+	// -----------------------------------------------------------------------------
+	// UI State
+	// -----------------------------------------------------------------------------
 	const [submitting, setSubmitting] = useState(false)
 	const [error, setError] = useState('')
 	const [success, setSuccess] = useState('')
 
+	// Memoized tag preview array
 	const tagPreview = useMemo(() => parseTags(form.tags), [form.tags])
 
+	// -----------------------------------------------------------------------------
+	// Event Handlers
+	// -----------------------------------------------------------------------------
+
+	/**
+	 * Handle text input changes for title, content, tags, status
+	 */
 	const handleChange = (event) => {
 		const { name, value } = event.target
 		setForm((prev) => ({ ...prev, [name]: value }))
 	}
 
+	/**
+	 * Handle image file selection
+	 * Creates a preview URL and stores the file for upload
+	 */
+	const handleImageChange = (event) => {
+		const file = event.target.files?.[0]
+		if (!file) return
+
+		// Validate file type using Cloudinary config
+		if (!CLOUDINARY_CONFIG.allowedTypes.includes(file.type)) {
+			setError('Vui lòng chọn file ảnh hợp lệ (JPEG, PNG, GIF, WebP)')
+			return
+		}
+
+		// Validate file size using Cloudinary config
+		if (file.size > CLOUDINARY_CONFIG.maxFileSize) {
+			const maxSizeMB = CLOUDINARY_CONFIG.maxFileSize / (1024 * 1024)
+			setError(`Kích thước ảnh tối đa là ${maxSizeMB}MB`)
+			return
+		}
+
+		// Clear any previous errors
+		setError('')
+
+		// Revoke previous preview URL to prevent memory leaks
+		if (imagePreview) {
+			URL.revokeObjectURL(imagePreview)
+		}
+
+		// Store file and create preview
+		setImageFile(file)
+		setImagePreview(URL.createObjectURL(file))
+	}
+
+	/**
+	 * Remove the selected image
+	 */
+	const handleRemoveImage = () => {
+		if (imagePreview) {
+			URL.revokeObjectURL(imagePreview)
+		}
+		setImageFile(null)
+		setImagePreview('')
+	}
+
+	/**
+	 * Handle form submission
+	 * 1. Validate required fields
+	 * 2. Upload image to Cloudinary (if selected)
+	 * 3. Create post with imageUrl
+	 * 4. Navigate to the new post
+	 */
 	const handleSubmit = async (event) => {
 		event.preventDefault()
 		setError('')
 		setSuccess('')
 
+		// Validate required fields
 		const trimmedTitle = form.title.trim()
 		const trimmedContent = form.content.trim()
 		if (!trimmedTitle || !trimmedContent) {
@@ -56,21 +153,67 @@ export default function PostCreatePage() {
 
 		setSubmitting(true)
 		try {
+			// ---------------------------------------------------------------------
+			// Step 1: Upload image to Cloudinary (if selected)
+			// IMPORTANT: Cloudinary direct upload uses UNSIGNED preset.
+			// uploadToCloudinary now returns secure_url string directly.
+			// ---------------------------------------------------------------------
+			let imageUrl = null
+			if (imageFile) {
+				setUploadingImage(true)
+				try {
+					// uploadToCloudinary returns the secure_url string directly
+					// e.g., "https://res.cloudinary.com/dwb1iwxp9/image/upload/v123/abc.jpg"
+					imageUrl = await uploadToCloudinary(imageFile)
+					
+					if (!imageUrl) {
+						throw new Error('Upload succeeded but no URL returned')
+					}
+					
+					console.log('✅ Image uploaded successfully:', imageUrl)
+				} catch (uploadError) {
+					console.error('❌ Image upload failed:', uploadError)
+					throw new Error(`Lỗi tải ảnh: ${uploadError.message}`)
+				} finally {
+					setUploadingImage(false)
+				}
+			}
+
+			// ---------------------------------------------------------------------
+			// Step 2: Build payload and create post
+			// ---------------------------------------------------------------------
 			const payload = {
 				title: trimmedTitle,
 				content: trimmedContent,
 				status: form.status,
 			}
+
+			// Add tags if provided
 			if (tagPreview.length) {
 				payload.tags = tagPreview
 			}
+
+			// Add image URL if uploaded successfully
+			if (imageUrl) {
+				payload.imageUrl = imageUrl
+			}
+
+			// ---------------------------------------------------------------------
+			// Step 3: Call API to create the post
+			// ---------------------------------------------------------------------
 			const response = await postApi.create(payload)
 			const created = response?.data ?? response
+
 			if (!created?.id) {
 				throw new Error('Phản hồi không hợp lệ, thiếu ID bài viết')
 			}
+
+			// ---------------------------------------------------------------------
+			// Step 4: Success! Navigate to the new post
+			// ---------------------------------------------------------------------
 			setSuccess('Đăng bài thành công! Đang chuyển đến bài viết...')
 			setTimeout(() => navigate(`${ROUTES.forum}/${created.id}`), 800)
+
 		} catch (err) {
 			setError(getApiErrorMessage(err, 'Không thể đăng bài viết'))
 		} finally {
@@ -98,6 +241,9 @@ export default function PostCreatePage() {
 
 			<div className="grid gap-6 lg:grid-cols-[minmax(0,_2fr)_minmax(0,_1fr)]">
 				<Card as="form" onSubmit={handleSubmit} className="space-y-5 border-slate-200 bg-white/90 p-6 shadow-sm">
+					{/* ---------------------------------------------------------------------
+					    Title Input
+					--------------------------------------------------------------------- */}
 					<Input
 						label="Tiêu đề"
 						id="title"
@@ -107,6 +253,9 @@ export default function PostCreatePage() {
 						placeholder="Ví dụ: Phân tích 4-2-3-1 của Arsenal"
 					/>
 
+					{/* ---------------------------------------------------------------------
+					    Content Textarea
+					--------------------------------------------------------------------- */}
 					<label className="text-sm font-medium text-slate-700" htmlFor="content">
 						Nội dung bài viết
 						<textarea
@@ -121,6 +270,70 @@ export default function PostCreatePage() {
 					</label>
 					<p className="text-xs text-slate-400">Mẹo: hãy chia thành từng đoạn nhỏ để dễ đọc hơn.</p>
 
+					{/* ---------------------------------------------------------------------
+					    Image Upload Section
+					--------------------------------------------------------------------- */}
+					<div className="space-y-3">
+						<label className="text-sm font-medium text-slate-700">
+							Ảnh minh họa (tùy chọn)
+						</label>
+						
+						{/* File Input */}
+						<div className="flex items-center gap-3">
+							<label className="cursor-pointer rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-600 transition hover:border-primary-400 hover:bg-primary-50 hover:text-primary-600">
+								<span className="flex items-center gap-2">
+									<svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+									</svg>
+									{imageFile ? 'Thay đổi ảnh' : 'Chọn ảnh'}
+								</span>
+								<input
+									type="file"
+									accept="image/*"
+									onChange={handleImageChange}
+									className="hidden"
+									disabled={submitting}
+								/>
+							</label>
+							
+							{imageFile && (
+								<span className="text-xs text-slate-500">
+									{imageFile.name} ({(imageFile.size / 1024).toFixed(1)} KB)
+								</span>
+							)}
+						</div>
+
+						{/* Image Preview */}
+						{imagePreview && (
+							<div className="relative inline-block">
+								<img
+									src={imagePreview}
+									alt="Preview"
+									className="max-h-48 rounded-xl border border-slate-200 object-cover shadow-sm"
+								/>
+								{/* Remove Image Button */}
+								<button
+									type="button"
+									onClick={handleRemoveImage}
+									disabled={submitting}
+									className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white shadow-md transition hover:bg-red-600 disabled:opacity-50"
+									title="Xóa ảnh"
+								>
+									<svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+									</svg>
+								</button>
+							</div>
+						)}
+
+						<p className="text-xs text-slate-400">
+							Định dạng hỗ trợ: JPEG, PNG, GIF, WebP. Kích thước tối đa: 5MB.
+						</p>
+					</div>
+
+					{/* ---------------------------------------------------------------------
+					    Tags Input
+					--------------------------------------------------------------------- */}
 					<Input
 						label="Tags (tối đa 10)"
 						id="tags"
@@ -139,6 +352,9 @@ export default function PostCreatePage() {
 						</div>
 					)}
 
+					{/* ---------------------------------------------------------------------
+					    Status Select
+					--------------------------------------------------------------------- */}
 					<label className="text-sm font-medium text-slate-700">
 						Trạng thái bài viết
 						<select
@@ -156,11 +372,21 @@ export default function PostCreatePage() {
 						</select>
 					</label>
 
+					{/* ---------------------------------------------------------------------
+					    Error / Success Messages
+					--------------------------------------------------------------------- */}
 					{error && <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>}
 					{success && <p className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{success}</p>}
 
-					<Button type="submit" isLoading={submitting} className="w-full rounded-2xl">
-						{submitting ? 'Đang đăng bài...' : 'Xuất bản bài viết'}
+					{/* ---------------------------------------------------------------------
+					    Submit Button
+					--------------------------------------------------------------------- */}
+					<Button type="submit" isLoading={submitting || uploadingImage} className="w-full rounded-2xl">
+						{uploadingImage 
+							? 'Đang tải ảnh lên...' 
+							: submitting 
+								? 'Đang đăng bài...' 
+								: 'Xuất bản bài viết'}
 					</Button>
 				</Card>
 
