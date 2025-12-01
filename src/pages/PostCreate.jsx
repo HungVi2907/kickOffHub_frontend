@@ -1,12 +1,12 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import apiClient from '../utils/apiClient.js'
 import getApiErrorMessage from '../utils/getApiErrorMessage.js'
 import { ROUTES } from '@/app/paths.js'
 
 const STATUS_OPTIONS = [
-  { value: 'public', label: 'Công khai' },
-  { value: 'draft', label: 'Lưu nháp' },
+  { value: 'public', label: 'Public' },
+  { value: 'draft', label: 'Draft' },
 ]
 
 const parseTags = (raw) => {
@@ -31,12 +31,36 @@ export default function PostCreate() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [imageFile, setImageFile] = useState(null)
+  const [imagePreview, setImagePreview] = useState('')
+
+  useEffect(() => {
+    return () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview)
+      }
+    }
+  }, [imagePreview])
 
   const tagPreview = useMemo(() => parseTags(form.tags), [form.tags])
 
   const handleChange = (event) => {
     const { name, value } = event.target
     setForm((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleImageChange = (event) => {
+    const file = event.target.files?.[0]
+    if (!file) {
+      setImageFile(null)
+      setImagePreview('')
+      return
+    }
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview)
+    }
+    setImageFile(file)
+    setImagePreview(URL.createObjectURL(file))
   }
 
   const handleSubmit = async (event) => {
@@ -47,22 +71,26 @@ export default function PostCreate() {
     const trimmedTitle = form.title.trim()
     const trimmedContent = form.content.trim()
     if (!trimmedTitle || !trimmedContent) {
-      setError('Tiêu đề và nội dung là bắt buộc.')
+      setError('Title and content are required.')
       return
     }
 
     setSubmitting(true)
     try {
-      const payload = {
-        title: trimmedTitle,
-        content: trimmedContent,
-        status: form.status,
-      }
+      const payload = new FormData()
+      payload.append('title', trimmedTitle)
+      payload.append('content', trimmedContent)
+      payload.append('status', form.status)
       if (tagPreview.length) {
-        payload.tags = tagPreview
+        payload.append('tags', JSON.stringify(tagPreview))
       }
-      const { data } = await apiClient.post('/posts', payload)
-      setSuccess('Đăng bài thành công! Đang chuyển đến bài viết...')
+      if (imageFile) {
+        payload.append('image', imageFile)
+      }
+      const { data } = await apiClient.post('/posts', payload, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      setSuccess('Post published successfully! Redirecting to the article...')
       setTimeout(() => navigate(`${ROUTES.forum}/${data.id}`), 800)
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể đăng bài viết'))
@@ -76,17 +104,15 @@ export default function PostCreate() {
       <div className="rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary-500">Chia sẻ kiến thức</p>
-            <h1 className="mt-2 text-3xl font-bold text-slate-900">Viết bài mới</h1>
-            <p className="mt-1 text-sm text-slate-500">
-              Lan tỏa góc nhìn của bạn về chiến thuật, cầu thủ hay giải đấu bạn yêu thích.
-            </p>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary-500">Share your insight</p>
+            <h1 className="mt-2 text-3xl font-bold text-slate-900">Write a new post</h1>
+            <p className="mt-1 text-sm text-slate-500">Share your take on tactics, players, or any competition you love.</p>
           </div>
           <Link
             to={ROUTES.forum}
             className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-primary-400 hover:text-primary-600"
           >
-            ← Quay lại diễn đàn
+            ← Back to forum
           </Link>
         </div>
       </div>
@@ -94,23 +120,21 @@ export default function PostCreate() {
       <div className="grid gap-6 lg:grid-cols-[minmax(0,_2fr)_minmax(0,_1fr)]">
         <form onSubmit={handleSubmit} className="space-y-5 rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-sm">
           <div className="space-y-2">
-            <label htmlFor="title" className="text-sm font-medium text-slate-700">
-              Tiêu đề
-            </label>
+            <label htmlFor="title" className="text-sm font-medium text-slate-700">Title</label>
             <input
               id="title"
               name="title"
               type="text"
               value={form.title}
               onChange={handleChange}
-              placeholder="Ví dụ: Phân tích 4-2-3-1 của Arsenal"
+              placeholder="Example: Arsenal's 4-2-3-1 build-up"
               className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200"
             />
           </div>
 
           <div className="space-y-2">
             <label htmlFor="content" className="text-sm font-medium text-slate-700">
-              Nội dung bài viết
+              Post content
             </label>
             <textarea
               id="content"
@@ -118,15 +142,52 @@ export default function PostCreate() {
               rows={10}
               value={form.content}
               onChange={handleChange}
-              placeholder="Chia sẻ góc nhìn chiến thuật, phân tích dữ liệu hoặc trải nghiệm của bạn..."
+              placeholder="Share your tactical take, data analysis, or match experience..."
               className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200"
             />
-            <p className="text-xs text-slate-400">Mẹo: hãy chia thành từng đoạn nhỏ để dễ đọc hơn.</p>
+            <p className="text-xs text-slate-400">Tip: break ideas into short paragraphs for readability.</p>
           </div>
+
+            <div className="space-y-2">
+              <label htmlFor="image" className="text-sm font-medium text-slate-700">
+                Cover image (optional)
+              </label>
+              <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 p-4">
+                {imagePreview ? (
+                  <div className="space-y-3">
+                  <img src={imagePreview} alt="Preview" className="h-64 w-full rounded-2xl object-cover" />
+                    <div className="flex items-center justify-between text-xs text-slate-500">
+                      <span>{imageFile?.name}</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setImageFile(null)
+                          setImagePreview('')
+                        }}
+                        className="text-rose-600"
+                      >
+                        Remove image
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <label
+                    htmlFor="image"
+                    className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white/70 px-4 py-8 text-center text-sm text-slate-500 hover:border-primary-300"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-primary-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v.75A2.25 2.25 0 0 0 5.25 19.5h13.5A2.25 2.25 0 0 0 21 17.25V16.5M16.5 7.5 12 3m0 0L7.5 7.5M12 3v13.5" />
+                    </svg>
+                    <span>Click to upload a local image (max 3 MB)</span>
+                  </label>
+                )}
+                <input id="image" name="image" type="file" accept="image/*" onChange={handleImageChange} className="sr-only" />
+              </div>
+            </div>
 
           <div className="space-y-2">
             <label htmlFor="tags" className="text-sm font-medium text-slate-700">
-              Tags (tối đa 10)
+              Tags (up to 10)
             </label>
             <input
               id="tags"
@@ -150,7 +211,7 @@ export default function PostCreate() {
 
           <div className="space-y-2">
             <label htmlFor="status" className="text-sm font-medium text-slate-700">
-              Trạng thái bài viết
+              Post status
             </label>
             <select
               id="status"
@@ -161,7 +222,7 @@ export default function PostCreate() {
             >
               {STATUS_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
-                  {option.label}
+                {option.label}
                 </option>
               ))}
             </select>
@@ -175,21 +236,21 @@ export default function PostCreate() {
             disabled={submitting}
             className="inline-flex w-full items-center justify-center rounded-2xl bg-primary-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-primary-500 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {submitting ? 'Đang đăng bài...' : 'Xuất bản bài viết'}
+          {submitting ? 'Publishing...' : 'Publish post'}
           </button>
         </form>
 
         <aside className="rounded-3xl border border-slate-200 bg-white/70 p-6 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Hướng dẫn nhanh</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Quick tips</p>
           <ul className="mt-4 space-y-3 text-sm text-slate-600">
-            <li>• Nội dung tối thiểu 50 ký tự, ưu tiên bố cục rõ ràng.</li>
-            <li>• Tags giúp người đọc dễ lọc chủ đề — hãy chọn tối đa 10 thẻ.</li>
-            <li>• Bạn có thể lưu nháp và hoàn thiện sau bằng cách chọn trạng thái "Lưu nháp".</li>
+            <li>• Minimum 50 characters with a clear, easy-to-scan structure.</li>
+            <li>• Tags help readers filter topics — pick up to 10 relevant ones.</li>
+            <li>• Save a draft and finish later by choosing the "Draft" status.</li>
           </ul>
           <hr className="my-4 border-dashed border-slate-200" />
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Quy tắc cộng đồng</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Community guidelines</p>
           <p className="mt-2 text-sm text-slate-600">
-            Tôn trọng tác giả khác, dẫn nguồn khi cần thiết và tránh chia sẻ thông tin sai lệch.
+            Respect other authors, cite sources when needed, and avoid spreading misinformation.
           </p>
         </aside>
       </div>

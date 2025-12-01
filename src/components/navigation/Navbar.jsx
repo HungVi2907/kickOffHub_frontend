@@ -112,7 +112,7 @@ export default function Navbar() {
             onSubmit={handleSearchSubmit}
             className="flex w-full items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 shadow-sm transition focus-within:border-primary-600 focus-within:ring-2 focus-within:ring-primary-200 sm:w-auto sm:flex-1 lg:max-w-md"
             role="search"
-            aria-label="Tìm kiếm"
+            aria-label="Search"
           >
             <input
               type="search"
@@ -146,7 +146,7 @@ export default function Navbar() {
                     {initials}
                   </div>
                   <div className="flex flex-col leading-tight">
-                    <span className="text-xs uppercase tracking-widest text-slate-400">Thành viên</span>
+                    <span className="text-xs uppercase tracking-widest text-slate-400">Member</span>
                     <span className="font-semibold text-slate-800 line-clamp-1">{user?.name || 'KickOff User'}</span>
                   </div>
                 </div>
@@ -155,7 +155,7 @@ export default function Navbar() {
                   onClick={handleLogout}
                   className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-rose-200 hover:text-rose-600"
                 >
-                  Đăng xuất
+                  Log out
                 </button>
               </>
             ) : (
@@ -164,13 +164,13 @@ export default function Navbar() {
                   to={ROUTES.login}
                   className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-primary-500 hover:text-primary-600"
                 >
-                  Đăng nhập
+                  Log in
                 </Link>
                 <Link
                   to={ROUTES.register}
                   className="rounded-full bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-500"
                 >
-                  Đăng ký
+                  Sign up
                 </Link>
               </>
             )}
@@ -194,7 +194,7 @@ export default function Navbar() {
                   onClick={handleLogout}
                   className="rounded-full border border-slate-200 px-4 py-2 text-center text-sm font-semibold text-slate-700 transition hover:border-rose-200 hover:text-rose-600"
                 >
-                  Đăng xuất
+                  Log out
                 </button>
               ) : (
                 <>
@@ -203,14 +203,14 @@ export default function Navbar() {
                     onClick={() => setIsOpen(false)}
                     className="rounded-full border border-slate-200 px-4 py-2 text-center text-sm font-semibold text-slate-700 transition hover:border-primary-500 hover:text-primary-600"
                   >
-                    Đăng nhập
+                    Log in
                   </Link>
                   <Link
                     to={ROUTES.register}
                     onClick={() => setIsOpen(false)}
                     className="rounded-full bg-primary-600 px-4 py-2 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-primary-500"
                   >
-                    Đăng ký
+                    Sign up
                   </Link>
                 </>
               )}

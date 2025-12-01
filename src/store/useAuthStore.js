@@ -17,7 +17,7 @@ const useAuthStore = create(
       partialize: (state) => ({ token: state.token, user: state.user }),
       onRehydrateStorage: () => (state, error) => {
         if (error) {
-          console.error('Không thể tải dữ liệu đăng nhập đã lưu:', error)
+          console.error('Failed to load saved login data:', error)
           return
         }
         state?.setHydrated(true)

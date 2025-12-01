@@ -37,7 +37,8 @@ export default function Forum() {
         }))
       } catch (err) {
         if (err.name === 'CanceledError') return
-        setError(getApiErrorMessage(err, 'Không thể tải danh sách bài viết'))
+        const message = err.response?.data?.error || err.message || 'Unable to load posts'
+        setError(message)
       } finally {
         setLoading(false)
       }
@@ -65,23 +66,23 @@ export default function Forum() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm backdrop-blur sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary-500">Diễn đàn</p>
-          <h1 className="text-3xl font-bold text-black">Trao đổi chiến thuật & tin tức</h1>
-          <p className="text-sm text-slate-600">Chia sẻ bài viết, bình luận và tương tác với cộng đồng KickOff Hub.</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary-500">Forum</p>
+          <h1 className="text-3xl font-bold text-black">Discuss tactics & breaking news</h1>
+          <p className="text-sm text-slate-600">Share posts, comment, and connect with the KickOff Hub community.</p>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <Link
             to={ROUTES.forumNew}
             className="inline-flex items-center justify-center rounded-full bg-primary-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-primary-500"
           >
-            + Viết bài mới
+            + Create new post
           </Link>
           <button
             type="button"
             onClick={handleRefresh}
             className="inline-flex items-center justify-center rounded-full border border-slate-200 px-5 py-2 text-sm font-medium text-slate-700 transition hover:border-primary-500 hover:text-primary-600"
           >
-            Làm mới
+            Refresh
           </button>
         </div>
       </div>
@@ -94,58 +95,66 @@ export default function Forum() {
 
         {!loading && error && (
           <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-600">
-            <p className="font-semibold">Không thể tải bài viết</p>
+            <p className="font-semibold">Unable to load posts</p>
             <p className="mt-1">{error}</p>
           </div>
         )}
 
         {!loading && !error && posts.length === 0 && (
           <div className="rounded-2xl border border-dashed border-slate-300 bg-white/60 p-6 text-sm text-slate-500">
-            Chưa có bài viết nào. Hãy là người đầu tiên chia sẻ!
+            No posts yet. Be the first to share!
           </div>
         )}
 
         {!loading && !error &&
-          posts.map((post) => (
-            <Link
-              key={post.id}
-              to={`/forum/${post.id}`}
-              className="group flex h-48 flex-col justify-between rounded-2xl border border-slate-200 bg-white/80 p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
-            >
-              <div className="flex flex-col gap-3">
-                <div className="flex items-center justify-between text-xs text-slate-400">
-                  <span>#{post.id}</span>
-                  <span>{post.likeCount ?? 0} lượt thích</span>
+          posts.map((post) => {
+            const imageSrc = post.imageUrl || post.image_url
+            return (
+              <Link
+                key={post.id}
+                to={`/forum/${post.id}`}
+                className="group flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white/80 p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+              >
+                {imageSrc && (
+                  <div className="relative overflow-hidden rounded-2xl border border-slate-100 bg-slate-50">
+                    <img src={imageSrc} alt={post.title} className="h-40 w-full object-cover transition duration-300 group-hover:scale-[1.02]" loading="lazy" />
+                  </div>
+                )}
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center justify-between text-xs text-slate-400">
+                    <span>#{post.id}</span>
+                    <span>{post.likeCount ?? 0} likes</span>
+                  </div>
+                  <h3 className="line-clamp-2 text-xl font-semibold text-black transition group-hover:text-primary-600">
+                    {post.title}
+                  </h3>
+                  <p className="line-clamp-3 text-sm text-slate-600">{post.content}</p>
                 </div>
-                <h3 className="text-xl font-semibold text-black transition group-hover:text-primary-600 line-clamp-2">
-                  {post.title}
-                </h3>
-                <p className="text-sm text-slate-600 line-clamp-3">{post.content}</p>
-              </div>
-              <div className="flex items-center justify-between text-xs text-slate-500">
-                <span>{post.author?.name || 'Ẩn danh'}</span>
-                <time>{post.created_at ? new Date(post.created_at).toLocaleString() : 'Mới'}</time>
-              </div>
-              {Array.isArray(post.tags) && post.tags.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {post.tags.map((tag) => (
-                    <span
-                      key={tag.id || tag.name}
-                      className="rounded-full bg-primary-100 px-2 py-1 text-xs font-medium text-primary-700"
-                    >
-                      #{tag.name}
-                    </span>
-                  ))}
+                <div className="flex items-center justify-between text-xs text-slate-500">
+                  <span>{post.author?.name || 'Anonymous'}</span>
+                  <time>{post.created_at ? new Date(post.created_at).toLocaleString() : 'Just now'}</time>
                 </div>
-              )}
-            </Link>
-          ))}
+                {Array.isArray(post.tags) && post.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {post.tags.map((tag) => (
+                      <span
+                        key={tag.id || tag.name}
+                        className="rounded-full bg-primary-100 px-2 py-1 text-xs font-medium text-primary-700"
+                      >
+                        #{tag.name}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </Link>
+            )
+          })}
       </div>
 
       {totalPages > 1 && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm shadow-sm">
           <span className="text-slate-600">
-            Trang {pagination.page} / {totalPages}
+            Page {pagination.page} of {totalPages}
           </span>
           <div className="flex items-center gap-2">
             <button
@@ -154,7 +163,7 @@ export default function Forum() {
               disabled={pagination.page <= 1 || loading}
               className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-4 py-2 font-medium text-slate-600 transition hover:border-primary-400 hover:text-primary-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Trước
+              Previous
             </button>
             <button
               type="button"
@@ -162,7 +171,7 @@ export default function Forum() {
               disabled={pagination.page >= totalPages || loading}
               className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-4 py-2 font-medium text-slate-600 transition hover:border-primary-400 hover:text-primary-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Sau
+              Next
             </button>
           </div>
         </div>
