@@ -66,12 +66,8 @@ export default function PostDetail() {
         }
       } catch (err) {
         if (!ignore) {
-<<<<<<< HEAD
-          setError(getApiErrorMessage(err, 'Không thể tải bài viết'))
-=======
           const message = err.response?.data?.error || err.message || 'Unable to load the post'
           setError(message)
->>>>>>> 327e32db352a0d3b5b785153aab6acf32f3ee73c
         }
       } finally {
         if (!ignore) setLoading(false)
