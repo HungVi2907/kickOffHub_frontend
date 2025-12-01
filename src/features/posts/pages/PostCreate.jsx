@@ -7,6 +7,9 @@ import { ROUTES } from '@/app/paths.js'
 import postApi from '@/features/posts/api.js'
 import { uploadToCloudinary, CLOUDINARY_CONFIG } from '@/lib/cloudinary.js'
 import getApiErrorMessage from '@/shared/utils/getApiErrorMessage.js'
+import { uploadImage } from "../api/upload";
+
+const imageUrl = await uploadImage(selectedFile);
 
 // =============================================================================
 // CONSTANTS
