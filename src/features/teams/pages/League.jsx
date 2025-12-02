@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import Card from '@/shared/components/ui/Card.jsx'
 import Skeleton from '@/shared/components/ui/Skeleton.jsx'
@@ -167,13 +167,15 @@ export default function LeaguePage() {
             Array.from({ length: 6 }).map((_, index) => <Skeleton key={`team-skeleton-${index}`} className="h-32" />)
           ) : leagueTeams.data.length ? (
             leagueTeams.data.map((team) => (
-              <Card key={team.id} className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
-                <img src={withFallback(team.logo)} alt={team.name} className="h-12 w-12 rounded-full object-cover" />
-                <div>
-                  <p className="font-semibold text-slate-900">{team.name}</p>
-                  <p className="text-xs text-slate-500">{team.country}</p>
-                </div>
-              </Card>
+              <Link key={team.id} to={`/teams/${team.id}`} className="group block">
+                <Card className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-md hover:border-primary-200 cursor-pointer">
+                  <img src={withFallback(team.logo)} alt={team.name} className="h-12 w-12 rounded-full object-cover" />
+                  <div>
+                    <p className="font-semibold text-slate-900 group-hover:text-primary-600 transition">{team.name}</p>
+                    <p className="text-xs text-slate-500">{team.country}</p>
+                  </div>
+                </Card>
+              </Link>
             ))
           ) : (
             <p className="col-span-full text-sm text-slate-500">No clubs available for this season.</p>
